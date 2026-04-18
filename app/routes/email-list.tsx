@@ -46,7 +46,7 @@ const FOLDER_EMPTY_STATES: Record<
 	}
 > = {
 	[Folders.INBOX]: {
-		icon: <TrayIcon size={48} weight="thin" className="text-kumo-subtle" />,
+		icon: <TrayIcon size={48} weight="thin" className="text-sh-text-muted" />,
 		title: "Your inbox is empty",
 		description:
 			"New emails will appear here when they arrive. Send an email to get the conversation started.",
@@ -54,26 +54,26 @@ const FOLDER_EMPTY_STATES: Record<
 	},
 	[Folders.SENT]: {
 		icon: (
-			<PaperPlaneTiltIcon size={48} weight="thin" className="text-kumo-subtle" />
+			<PaperPlaneTiltIcon size={48} weight="thin" className="text-sh-text-muted" />
 		),
 		title: "No sent emails",
 		description: "Emails you send will show up here.",
 		showCompose: true,
 	},
 	[Folders.DRAFT]: {
-		icon: <FileIcon size={48} weight="thin" className="text-kumo-subtle" />,
+		icon: <FileIcon size={48} weight="thin" className="text-sh-text-muted" />,
 		title: "No drafts",
 		description: "Emails you're still working on will be saved here.",
 		showCompose: true,
 	},
 	[Folders.ARCHIVE]: {
-		icon: <ArchiveIcon size={48} weight="thin" className="text-kumo-subtle" />,
+		icon: <ArchiveIcon size={48} weight="thin" className="text-sh-text-muted" />,
 		title: "Archive is empty",
 		description:
 			"Move emails here to keep your inbox clean without deleting them.",
 	},
 	[Folders.TRASH]: {
-		icon: <TrashIcon size={48} weight="thin" className="text-kumo-subtle" />,
+		icon: <TrashIcon size={48} weight="thin" className="text-sh-text-muted" />,
 		title: "Trash is empty",
 		description:
 			"Deleted emails will appear here. You can restore them or permanently delete them.",
@@ -85,16 +85,16 @@ function EmailListSkeleton() {
 		<div className="animate-pulse space-y-1 p-2">
 			{Array.from({ length: 8 }).map((_, i) => (
 				<div key={i} className="flex items-center gap-3 px-3 py-3">
-					<div className="w-4 h-4 rounded bg-kumo-fill" />
-					<div className="w-5 h-5 rounded bg-kumo-fill" />
+					<div className="w-4 h-4 rounded-[2px] bg-sh-bg-hover" />
+					<div className="w-5 h-5 rounded-[2px] bg-sh-bg-hover" />
 					<div className="flex-1 space-y-2">
 						<div className="flex items-center gap-2">
-							<div className="h-3 w-24 rounded bg-kumo-fill" />
-							<div className="h-3 w-4 rounded bg-kumo-fill" />
-							<div className="h-3 flex-1 rounded bg-kumo-fill" />
-							<div className="h-3 w-12 rounded bg-kumo-fill" />
+							<div className="h-3 w-24 rounded-[2px] bg-sh-bg-hover" />
+							<div className="h-3 w-4 rounded-[2px] bg-sh-bg-hover" />
+							<div className="h-3 flex-1 rounded-[2px] bg-sh-bg-hover" />
+							<div className="h-3 w-12 rounded-[2px] bg-sh-bg-hover" />
 						</div>
-						<div className="h-2.5 w-3/4 rounded bg-kumo-fill" />
+						<div className="h-2.5 w-3/4 rounded-[2px] bg-sh-bg-hover" />
 					</div>
 				</div>
 			))}
@@ -111,7 +111,7 @@ function FolderEmptyState({
 }) {
 	const config = (folder && FOLDER_EMPTY_STATES[folder]) || {
 		icon: (
-			<EnvelopeSimpleIcon size={48} weight="thin" className="text-kumo-subtle" />
+			<EnvelopeSimpleIcon size={48} weight="thin" className="text-sh-text-muted" />
 		),
 		title: "No emails",
 		description: "This folder is empty.",
@@ -120,21 +120,21 @@ function FolderEmptyState({
 	return (
 		<div className="flex flex-col items-center justify-center py-24 px-6 text-center">
 			<div className="mb-4">{config.icon}</div>
-			<h3 className="text-base font-semibold text-kumo-default mb-1.5">
+			<h3 className="text-[13px] font-semibold text-sh-text-white mb-1.5">
 				{config.title}
 			</h3>
-			<p className="text-sm text-kumo-subtle max-w-xs mb-5">
+			<p className="text-[12px] text-sh-text-muted max-w-xs mb-5">
 				{config.description}
 			</p>
 			{"showCompose" in config && config.showCompose && (
-				<Button
-					variant="primary"
-					size="sm"
-					icon={<PencilSimpleIcon size={16} />}
+				<button
+					type="button"
 					onClick={onCompose}
+					className="flex items-center gap-1.5 bg-sh-accent hover:bg-opacity-90 text-sh-text-white px-3 py-1 rounded-[2px] text-[12px] font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-sh-accent"
 				>
-					Compose
-				</Button>
+					<PencilSimpleIcon size={14} />
+					<span>Compose</span>
+				</button>
 			)}
 		</div>
 	);
@@ -261,10 +261,22 @@ export default function EmailListRoute() {
 		if (email.participants) {
 			const names = email.participants
 				.split(",")
-				.map((p) => p.trim().split("@")[0])
+				.map((p) => {
+					const match = p.match(/(.*)<(.*)>/);
+					if (match && match[1].trim()) {
+						return match[1].replace(/^"|"$/g, "").trim();
+					}
+					return p.trim().split("@")[0];
+				})
 				.filter((name, idx, arr) => arr.indexOf(name) === idx);
 			if (names.length <= 3) return names.join(", ");
 			return `${names.slice(0, 2).join(", ")} +${names.length - 2}`;
+		}
+		
+		// Fallback to sender if no participants field
+		const match = email.sender.match(/(.*)<(.*)>/);
+		if (match && match[1].trim()) {
+			return match[1].replace(/^"|"$/g, "").trim();
 		}
 		return email.sender.split("@")[0];
 	};
@@ -315,8 +327,8 @@ export default function EmailListRoute() {
 												weight={email.starred ? "fill" : "regular"}
 												className={
 													email.starred
-														? "text-kumo-warning"
-														: "text-kumo-subtle hover:text-kumo-warning"
+														? "text-[#eab308]"
+														: "text-sh-text-muted hover:text-[#eab308]"
 												}
 											/>
 										</button>

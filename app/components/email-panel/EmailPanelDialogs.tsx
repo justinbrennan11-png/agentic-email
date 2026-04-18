@@ -75,24 +75,24 @@ export default function EmailPanelDialogs({
 					<Dialog.Title>
 						Email Source Headers
 						{sourceViewEmail && (
-							<span className="text-sm font-normal text-kumo-subtle ml-2">
+							<span className="text-[13px] font-normal text-sh-text-muted ml-2">
 								{sourceViewEmail.subject}
 							</span>
 						)}
 					</Dialog.Title>
 					{sourceViewEmail && (
-						<div className="mt-4 max-h-[60vh] overflow-y-auto">
-							<table className="w-full text-sm border-collapse">
+						<div className="mt-4 max-h-[60vh] overflow-y-auto bg-sh-bg-dark rounded-[2px] border border-sh-border">
+							<table className="w-full text-[13px] border-collapse">
 								<tbody>
 									{sourceHeaders.map((header, idx) => (
 										<tr
 											key={`${header.key}-${idx}`}
-											className={idx % 2 === 0 ? "bg-kumo-tint/50" : ""}
+											className={idx % 2 === 0 ? "bg-sh-bg-hover" : ""}
 										>
-											<td className="py-1.5 px-3 font-mono font-semibold text-kumo-default whitespace-nowrap align-top w-[160px]">
+											<td className="py-1.5 px-3 font-mono font-semibold text-sh-text-white whitespace-nowrap align-top w-[160px]">
 												{header.key}
 											</td>
-											<td className="py-1.5 px-3 font-mono text-kumo-subtle break-all">
+											<td className="py-1.5 px-3 font-mono text-sh-text-muted break-all">
 												{header.value}
 											</td>
 										</tr>
@@ -100,7 +100,7 @@ export default function EmailPanelDialogs({
 								</tbody>
 							</table>
 							{sourceHeaders.length === 0 && (
-								<p className="text-sm text-kumo-subtle text-center py-8">
+								<p className="text-[13px] text-sh-text-muted text-center py-8">
 									No header data available for this email.
 								</p>
 							)}
@@ -125,11 +125,11 @@ export default function EmailPanelDialogs({
 				<Dialog size="lg">
 					<Dialog.Title>{previewImage?.filename}</Dialog.Title>
 					{previewImage && (
-						<div className="mt-4 flex flex-col items-center justify-center bg-kumo-tint/30 rounded-lg p-4 min-h-[200px]">
+						<div className="mt-4 flex flex-col items-center justify-center bg-sh-bg-dark rounded-[2px] p-4 min-h-[200px] border border-sh-border">
 							<img
 								src={previewImage.url}
 								alt={previewImage.filename}
-								className="max-w-full max-h-[70vh] object-contain rounded shadow-sm"
+								className="max-w-full max-h-[70vh] object-contain rounded-[2px] shadow-sm"
 							/>
 						</div>
 					)}

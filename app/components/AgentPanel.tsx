@@ -235,29 +235,29 @@ function MessageBubble({
 												</h5>
 											),
 											code: ({ children }) => (
-												<code className="bg-kumo-fill px-1 py-0.5 rounded text-[12px]">
+												<code className="bg-sh-bg-hover px-1 py-0.5 rounded-[2px] text-[12px] text-sh-text-muted">
 													{children}
 												</code>
 											),
 											table: ({ children }) => (
-												<div className="overflow-x-auto my-2">
-													<table className="w-full text-xs border-collapse">
+												<div className="overflow-x-auto my-2 border border-sh-border-thin rounded-[2px]">
+													<table className="w-full text-[12px] border-collapse">
 														{children}
 													</table>
 												</div>
 											),
 											thead: ({ children }) => (
-												<thead className="border-b border-kumo-line bg-kumo-fill/30">
+												<thead className="border-b border-sh-border-thin bg-sh-bg-hover">
 													{children}
 												</thead>
 											),
 											th: ({ children }) => (
-												<th className="text-left px-2 py-1 font-semibold text-kumo-strong">
+												<th className="text-left px-2 py-1 font-semibold text-sh-text-white">
 													{children}
 												</th>
 											),
 											td: ({ children }) => (
-												<td className="px-2 py-1 border-b border-kumo-line/50">
+												<td className="px-2 py-1 border-b border-sh-border-thin">
 													{children}
 												</td>
 											),
@@ -545,7 +545,7 @@ export default function AgentPanel() {
 	if (loadError) {
 		return (
 			<div className="flex flex-col items-center justify-center h-full gap-2 px-4 text-center">
-				<span className="text-xs text-kumo-error">{loadError}</span>
+				<span className="text-[12px] text-red-400">{loadError}</span>
 			</div>
 		);
 	}
@@ -554,7 +554,7 @@ export default function AgentPanel() {
 		return (
 			<div className="flex flex-col items-center justify-center h-full gap-2">
 				<Loader size="base" />
-				<span className="text-xs text-kumo-subtle">
+				<span className="text-[12px] text-sh-text-muted">
 					Connecting...
 				</span>
 			</div>

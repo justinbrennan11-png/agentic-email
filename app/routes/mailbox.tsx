@@ -40,25 +40,6 @@ export default function MailboxRoute() {
 
 	return (
 		<div className="flex h-screen overflow-hidden bg-sh-bg-dark font-sh-sans">
-			{/* Mobile sidebar overlay backdrop */}
-			{isSidebarOpen && (
-				<div
-					className="fixed inset-0 z-30 bg-black/30 md:hidden"
-					onClick={closeSidebar}
-					onKeyDown={(e) => e.key === "Escape" && closeSidebar()}
-					role="button"
-					tabIndex={-1}
-					aria-label="Close sidebar"
-				/>
-			)}
-
-			{/* Left icon rail (collapsed sidebar) */}
-			<div className="w-sh-rail shrink-0 border-r border-sh-border flex flex-col items-center py-4 bg-sh-bg-panel z-10 hidden md:flex">
-				{/* The icon rail can be extracted to a separate component, but we will place Compose button in Header and maybe just some icons here or leave it empty if nav moved to top */}
-				{/* Assuming Sidebar is removed or refactored into just icons */}
-				<Sidebar />
-			</div>
-
 			{/* Main content */}
 			<div className="flex-1 flex flex-col min-w-0 bg-sh-bg-dark">
 				<Header />

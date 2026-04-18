@@ -19,21 +19,21 @@ export default function SingleMessageView({
 	onPreviewImage,
 }: SingleMessageViewProps) {
 	return (
-		<div className="flex flex-col h-full">
-			<div className="px-4 py-4 border-b border-kumo-line md:px-6">
+		<div className="flex flex-col h-full bg-sh-bg-dark text-sh-text-white">
+			<div className="px-4 py-4 border-b border-sh-border md:px-6">
 				<div className="flex items-center justify-between gap-3">
 					<div className="flex items-center gap-2.5 min-w-0">
-						<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-kumo-fill text-xs font-bold text-kumo-default">
+						<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[2px] bg-sh-bg-hover text-[13px] font-bold text-sh-text-white">
 							{email.sender.charAt(0).toUpperCase()}
 						</div>
 						<div className="min-w-0">
-							<div className="text-sm font-medium text-kumo-default truncate">
+							<div className="text-[13px] font-medium text-sh-text-white truncate">
 								{email.sender}
 							</div>
-							<div className="text-xs text-kumo-subtle">To: {email.recipient}</div>
+							<div className="text-[12px] text-sh-text-muted">To: {email.recipient}</div>
 						</div>
 					</div>
-					<span className="text-xs text-kumo-subtle shrink-0">
+					<span className="text-[12px] text-sh-text-muted shrink-0">
 						{formatDetailDate(email.date)}
 					</span>
 				</div>
@@ -55,7 +55,7 @@ export default function SingleMessageView({
 				emailId={email.id}
 				attachments={email.attachments}
 				onPreviewImage={onPreviewImage}
-				className="px-4 py-3 border-t border-kumo-line shrink-0 md:px-6"
+				className="px-4 py-3 border-t border-sh-border shrink-0 md:px-6"
 				showHeading
 			/>
 		</div>

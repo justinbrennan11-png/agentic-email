@@ -26,7 +26,7 @@ function LazyAgentPanel() {
 	if (loadError) {
 		return (
 			<div className="flex items-center justify-center h-full">
-				<span className="text-xs text-kumo-error">{loadError}</span>
+				<span className="text-[12px] text-red-400">{loadError}</span>
 			</div>
 		);
 	}
@@ -34,7 +34,7 @@ function LazyAgentPanel() {
 		return (
 			<div className="flex flex-col items-center justify-center h-full gap-2">
 				<Loader size="base" />
-				<span className="text-xs text-kumo-subtle">Loading agent...</span>
+				<span className="text-[12px] text-sh-text-muted">Loading agent...</span>
 			</div>
 		);
 	}
