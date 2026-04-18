@@ -41,18 +41,29 @@ interface UIState {
 	isComposeModalOpen: boolean;
 	openComposeModal: (options?: ComposeOptions) => void;
 	closeComposeModal: () => void;
+
+	// Sender Card (Mobile toggle)
+	isSenderCardOpen: boolean;
+	toggleSenderCard: () => void;
+
+	// Alias for selectedEmailId
+	selectedThreadId: string | null;
+	setSelectedThreadId: (id: string | null) => void;
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
 	selectedEmailId: null,
+	selectedThreadId: null,
 	isComposing: false,
 	_previousEmailId: null,
 	composeOptions: { mode: "new", originalEmail: null },
 	isComposeModalOpen: false,
 	isSidebarOpen: false,
 	isAgentPanelOpen: true,
+	isSenderCardOpen: false,
 
-	selectEmail: (id) => set({ selectedEmailId: id, isComposing: false }),
+	selectEmail: (id) => set({ selectedEmailId: id, selectedThreadId: id, isComposing: false }),
+	setSelectedThreadId: (id) => set({ selectedThreadId: id, selectedEmailId: id, isComposing: false }),
 
 	startCompose: (options) =>
 		set((state) => {
@@ -95,4 +106,6 @@ export const useUIStore = create<UIState>((set, get) => ({
 			isComposeModalOpen: false,
 			composeOptions: { mode: "new", originalEmail: null },
 		}),
+
+	toggleSenderCard: () => set({ isSenderCardOpen: !get().isSenderCardOpen }),
 }));

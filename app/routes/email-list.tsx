@@ -147,8 +147,9 @@ export default function EmailListRoute() {
 	}>();
 	const {
 		selectedEmailId,
+		selectedThreadId,
 		isComposing,
-		selectEmail,
+		setSelectedThreadId,
 		closePanel,
 		startCompose,
 	} = useUIStore();
@@ -239,7 +240,7 @@ export default function EmailListRoute() {
 	};
 
 	const handleRowClick = (email: Email) => {
-		selectEmail(email.id);
+		setSelectedThreadId(email.id);
 		if (mailboxId && hasUnread(email)) {
 			if (email.thread_id && email.thread_count && email.thread_count > 1) {
 				markThreadRead.mutate({
