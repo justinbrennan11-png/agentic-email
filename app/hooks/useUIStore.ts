@@ -53,6 +53,9 @@ interface UIState {
 	// Contact list selection
 	selectedContact: string | null;
 	setSelectedContact: (contact: string | null) => void;
+	
+	// Close just the thread to return to contact list
+	closeThread: () => void;
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
@@ -86,6 +89,8 @@ export const useUIStore = create<UIState>((set, get) => ({
 		}),
 
 	closePanel: () => set({ selectedContact: null, selectedThreadId: null, selectedEmailId: null, isComposing: false, _previousEmailId: null, composeOptions: { mode: "new" as const, originalEmail: null } }),
+
+	closeThread: () => set({ selectedThreadId: null, selectedEmailId: null, isComposing: false, _previousEmailId: null, composeOptions: { mode: "new" as const, originalEmail: null } }),
 
 	closeCompose: () =>
 		set((state) => ({

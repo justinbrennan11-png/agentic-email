@@ -25,7 +25,6 @@ import MailboxSplitView from "~/components/MailboxSplitView";
 import ComposePanel from "~/components/ComposePanel";
 import EmailPanel from "~/components/EmailPanel";
 import SenderCard from "~/components/SenderCard";
-import ThreadContextPanel from "~/components/ThreadContextPanel";
 import { getSnippetText } from "~/lib/utils";
 import {
 	useDeleteEmail,
@@ -440,9 +439,7 @@ export default function EmailListRoute() {
 	}
 
 	let rightPane: React.ReactNode | null = null;
-	if (selectedEmailId) {
-		rightPane = <ThreadContextPanel emailId={selectedEmailId} />;
-	} else if (selectedContact) {
+	if (selectedContact) {
 		rightPane = <SenderCard contactEmail={selectedContact} />;
 	}
 
