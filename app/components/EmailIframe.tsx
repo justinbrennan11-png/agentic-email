@@ -143,10 +143,11 @@ ul, ol { padding-left: 20px; margin: 4px 0; }
 	return (
 		<iframe
 			ref={iframeRef}
-			className="block w-full border-0"
+			className="block w-full border-0 bg-transparent"
 			style={autoSize ? { height: `${height}px` } : { height: "100%" }}
 			sandbox="allow-scripts allow-popups allow-top-navigation-by-user-activation"
 			title="Email content"
+			allowTransparency={true}
 		/>
 	);
 }
