@@ -5,7 +5,7 @@
 import React, { useMemo, useState } from "react";
 import { useParams } from "react-router";
 import MailboxSplitView from "~/components/MailboxSplitView";
-import SenderCard from "~/components/SenderCard";
+import ContactDetail from "~/components/ContactDetail";
 import { useEmails } from "~/queries/emails";
 import { useUIStore } from "~/hooks/useUIStore";
 import { parseSenderInfo } from "~/lib/utils";
@@ -100,9 +100,10 @@ export default function ContactsRoute() {
 
 	let centerPane: React.ReactNode;
 	if (selectedContact) {
+		const contactObj = contacts.find(c => c.emailAddress === selectedContact);
 		centerPane = (
-			<div className="flex flex-col h-full bg-transparent w-full md:w-1/2 lg:w-1/3 mx-auto">
-				<SenderCard contactEmail={selectedContact} />
+			<div className="flex flex-col h-full bg-transparent w-full">
+				<ContactDetail contact={contactObj} onBack={() => setSelectedContact(null)} />
 			</div>
 		);
 	} else {
