@@ -77,7 +77,7 @@ export default function Header() {
 	};
 
 	return (
-		<header className="flex items-center justify-between px-4 h-[48px] bg-sh-bg-panel border-b border-sh-border sticky top-0 z-10 shrink-0">
+		<header className="flex items-center justify-between px-4 pb-2 pt-4 h-[56px] bg-transparent border-b border-sh-border sticky top-0 z-10 shrink-0">
 			{/* Left: Split Inbox Tabs */}
 			<nav className="flex items-center h-full gap-4 overflow-x-auto no-scrollbar">
 				{SYSTEM_FOLDER_LINKS.map((folder) => {
