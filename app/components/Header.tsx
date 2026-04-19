@@ -77,9 +77,9 @@ export default function Header() {
 	};
 
 	return (
-		<header className="flex items-center justify-between px-4 pb-2 pt-4 h-[56px] bg-transparent border-b border-sh-border sticky top-0 z-10 shrink-0">
+		<header className="flex items-center justify-between px-6 h-[80px] bg-transparent border-b border-sh-border sticky top-0 z-10 shrink-0">
 			{/* Left: Split Inbox Tabs */}
-			<nav className="flex items-center h-full gap-4 overflow-x-auto no-scrollbar">
+			<nav className="flex items-center h-full gap-6 overflow-x-auto no-scrollbar">
 				{SYSTEM_FOLDER_LINKS.map((folder) => {
 					const unread = getUnreadCount(folder.id);
 					return (
@@ -87,21 +87,18 @@ export default function Header() {
 							key={folder.id}
 							to={`/mailbox/${mailboxId}/emails/${folder.id}`}
 							className={({ isActive }) =>
-								`relative flex items-center h-full text-sh-base transition-colors ${
+								`flex items-center h-full text-[15px] transition-colors ${
 									isActive
-										? "text-sh-text-white font-medium"
-										: "text-sh-text-inactive hover:text-sh-text-muted"
+										? "text-sh-text-white font-bold"
+										: "text-sh-text-inactive font-medium hover:text-sh-text-muted"
 								}`
 							}
 						>
-							{({ isActive }) => (
+							{() => (
 								<>
 									<span>{folder.label}</span>
 									{unread > 0 && (
-										<span className="ml-1.5 text-sh-text-inactive">({unread})</span>
-									)}
-									{isActive && (
-										<div className="absolute bottom-0 left-0 right-0 h-[2px] bg-sh-accent" />
+										<span className="ml-1.5 text-sh-text-inactive font-medium">({unread})</span>
 									)}
 								</>
 							)}
@@ -115,21 +112,18 @@ export default function Header() {
 							key={folder.id}
 							to={`/mailbox/${mailboxId}/emails/${folder.id}`}
 							className={({ isActive }) =>
-								`relative flex items-center h-full text-sh-base transition-colors ${
+								`flex items-center h-full text-[15px] transition-colors ${
 									isActive
-										? "text-sh-text-white font-medium"
-										: "text-sh-text-inactive hover:text-sh-text-muted"
+										? "text-sh-text-white font-bold"
+										: "text-sh-text-inactive font-medium hover:text-sh-text-muted"
 								}`
 							}
 						>
-							{({ isActive }) => (
+							{() => (
 								<>
 									<span>{folder.name}</span>
 									{unread > 0 && (
-										<span className="ml-1.5 text-sh-text-inactive">({unread})</span>
-									)}
-									{isActive && (
-										<div className="absolute bottom-0 left-0 right-0 h-[2px] bg-sh-accent" />
+										<span className="ml-1.5 text-sh-text-inactive font-medium">({unread})</span>
 									)}
 								</>
 							)}
