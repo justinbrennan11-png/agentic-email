@@ -3,13 +3,14 @@
 //     https://opensource.org/licenses/Apache-2.0
 
 import { Tooltip } from "@cloudflare/kumo";
-import { GearSixIcon, RobotIcon, XIcon, PencilSimpleIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
+import { GearSixIcon, RobotIcon, XIcon, PencilSimpleIcon, MagnifyingGlassIcon, List } from "@phosphor-icons/react";
 import React, { type KeyboardEvent, useEffect, useState, useMemo } from "react";
 import { useLocation, useNavigate, useParams, useSearchParams, NavLink } from "react-router";
 import { useUIStore } from "~/hooks/useUIStore";
 import { Folders, SYSTEM_FOLDER_IDS } from "shared/folders";
 import { useFolders } from "~/queries/folders";
 import SearchModal from "~/components/SearchModal";
+import AppDrawer from "~/components/AppDrawer";
 
 const SYSTEM_FOLDER_LINKS = [
 	{ id: Folders.INBOX, label: "Inbox" },
@@ -21,6 +22,7 @@ const SYSTEM_FOLDER_LINKS = [
 
 export default function Header() {
 	const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+	const [isAppDrawerOpen, setIsAppDrawerOpen] = useState(false);
 	const { mailboxId } = useParams<{ mailboxId: string }>();
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -42,7 +44,18 @@ export default function Header() {
 	return (
 		<header className="flex items-center justify-between px-6 h-[80px] bg-transparent border-b border-sh-border sticky top-0 z-10 shrink-0">
 			{/* Left: Split Inbox Tabs */}
-			<nav className="flex items-center h-full gap-6 overflow-x-auto no-scrollbar">
+			<div className="flex items-center h-full">
+				{/* Menu Button */}
+				<button
+					type="button"
+					onClick={() => setIsAppDrawerOpen(true)}
+					className="p-1.5 mr-6 text-sh-text-muted hover:text-sh-text-white hover:bg-sh-bg-hover transition-colors rounded-[2px] focus:outline-none focus:ring-2 focus:ring-sh-accent shrink-0"
+					aria-label="Open menu"
+				>
+					<List size={20} />
+				</button>
+
+				<nav className="flex items-center h-full gap-6 overflow-x-auto no-scrollbar">
 				{SYSTEM_FOLDER_LINKS.map((folder) => {
 					const unread = getUnreadCount(folder.id);
 					return (
@@ -94,6 +107,7 @@ export default function Header() {
 					);
 				})}
 			</nav>
+			</div>
 
 			{/* Right: Search, Compose, Settings, Agent */}
 			<div className="flex items-center gap-3 shrink-0 ml-4">
@@ -163,6 +177,11 @@ export default function Header() {
 			<SearchModal
 				isOpen={isSearchModalOpen}
 				onClose={() => setIsSearchModalOpen(false)}
+				mailboxId={mailboxId || ""}
+			/>
+			<AppDrawer
+				isOpen={isAppDrawerOpen}
+				onClose={() => setIsAppDrawerOpen(false)}
 				mailboxId={mailboxId || ""}
 			/>
 		</header>

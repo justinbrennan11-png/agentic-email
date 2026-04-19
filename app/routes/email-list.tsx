@@ -25,7 +25,7 @@ import MailboxSplitView from "~/components/MailboxSplitView";
 import ComposePanel from "~/components/ComposePanel";
 import EmailPanel from "~/components/EmailPanel";
 import SenderCard from "~/components/SenderCard";
-import { getSnippetText } from "~/lib/utils";
+import { getSnippetText, parseSenderInfo } from "~/lib/utils";
 import {
 	useDeleteEmail,
 	useEmails,
@@ -265,18 +265,7 @@ export default function EmailListRoute() {
 		const map = new Map<string, { emailAddress: string; displayName: string; latestEmail: Email; threadCount: number; unreadCount: number }>();
 		
 		emails.forEach(email => {
-			const senderStr = email.sender || "";
-			let displayName = senderStr;
-			let emailAddress = senderStr;
-
-			const match = senderStr.match(/(.*)<(.*)>/);
-			if (match) {
-				displayName = match[1].trim() || match[2].trim();
-				emailAddress = match[2].trim();
-			} else {
-				displayName = senderStr.split("@")[0];
-			}
-			displayName = displayName.replace(/^"|"$/g, "").trim();
+			const { displayName, emailAddress } = parseSenderInfo(email.sender);
 			
 			// Normalize email address to lowercase early on
 			const normalizedEmailAddress = emailAddress.toLowerCase();

@@ -200,6 +200,28 @@ export function getNonInlineAttachments(attachments?: Attachment[]): Attachment[
 	return attachments?.filter((attachment) => attachment.disposition !== "inline") ?? [];
 }
 
+/**
+ * Extract display name and email address from a sender string (e.g. "John Doe <john@example.com>")
+ */
+export function parseSenderInfo(senderStr: string | undefined | null): { displayName: string; emailAddress: string } {
+	if (!senderStr) return { displayName: "", emailAddress: "" };
+	
+	let displayName = senderStr;
+	let emailAddress = senderStr;
+
+	const match = senderStr.match(/(.*)<(.*)>/);
+	if (match) {
+		displayName = match[1].trim() || match[2].trim();
+		emailAddress = match[2].trim();
+	} else {
+		displayName = senderStr.split("@")[0];
+	}
+	
+	displayName = displayName.replace(/^"|"$/g, "").trim();
+	
+	return { displayName, emailAddress };
+}
+
 export function getAttachmentUrl(
 	mailboxId: string,
 	emailId: string,
