@@ -425,8 +425,11 @@ export default function EmailListRoute() {
 				// If no thread_id, use subject, but strip prefixes like "Re:", "Fwd:", etc.
 				let groupKey = e.thread_id;
 				if (!groupKey) {
-					const subject = e.subject || "";
-					groupKey = subject.replace(/^(re|fwd|fw|aw):\s*/i, "").trim().toLowerCase();
+					let subject = e.subject || "";
+					// Strip out any amount of Re:, Fwd:, etc., even multiple ones like "Re: Fwd: Re: Lunch"
+					subject = subject.replace(/^((re|fwd|fw|aw):\s*)+/ig, "").trim();
+					// If the subject is empty after stripping, just use "(no subject)"
+					groupKey = subject.toLowerCase() || "(no subject)";
 				}
 
 				const existing = groupedThreadsMap.get(groupKey);
