@@ -5,7 +5,7 @@
 import { FloppyDiskIcon, PaperPlaneTiltIcon, XIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useParams } from "react-router";
 import { useUIStore } from "~/hooks/useUIStore";
-import { formatComposeDate } from "~/lib/utils";
+import { formatComposeDate, htmlToPlainText } from "~/lib/utils";
 import { useComposeForm } from "~/hooks/useComposeForm";
 import RichTextEditor from "./RichTextEditor";
 
@@ -69,13 +69,13 @@ export default function ComposePanel() {
 						<span className="text-[11px]">{originalEmail?.date ? formatComposeDate(originalEmail.date) : ""}</span>
 					</div>
 					<div className="text-sh-text-read line-clamp-3 overflow-hidden text-ellipsis italic opacity-80 border-l-2 border-sh-border-thin pl-3">
-						"{originalEmail?.snippet || "No preview available"}"
+						"{originalEmail?.snippet || htmlToPlainText(originalEmail?.body || "") || "No preview available"}"
 					</div>
 				</div>
 			)}
 
 			<form
-				onSubmit={(e) => handleSend(e, closePanel)}
+				onSubmit={(e) => handleSend(e)}
 				className="flex flex-col flex-1 min-h-0"
 			>
 				<div className="p-4 md:p-6 space-y-4 flex-1 flex flex-col min-h-0 overflow-y-auto no-scrollbar">

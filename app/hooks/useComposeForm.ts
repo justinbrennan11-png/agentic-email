@@ -232,7 +232,7 @@ export function useComposeForm(mailboxId?: string, _folder?: string) {
 		finally { setIsSavingDraft(false); }
 	};
 
-	const handleSend = async (e: FormEvent, onClose: () => void) => {
+	const handleSend = async (e: FormEvent) => {
 		e.preventDefault(); if (isSending) return; setError(null);
 		if (!currentMailbox || !mailboxId) { setError("No mailbox selected."); return; }
 		const toRecipients = splitEmailList(to);
@@ -257,7 +257,7 @@ export function useComposeForm(mailboxId?: string, _folder?: string) {
 			else await sendEmailMutation.mutateAsync({ mailboxId, email: emailData });
 			if (draftId) deleteEmailMutation.mutate({ mailboxId, id: draftId });
 			toastManager.add({ title: "Email sent!" });
-			onClose();
+			closeCompose();
 		} catch (err: unknown) { const message = (err instanceof Error ? err.message : null) || "Failed to send email."; setError(message); toastManager.add({ title: message, variant: "error" }); }
 		finally { setIsSending(false); }
 	};
