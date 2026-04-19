@@ -182,6 +182,30 @@ export default function EmailListRoute() {
 	const emails = emailData?.emails ?? [];
 	const totalCount = emailData?.totalCount ?? 0;
 
+	// Also fetch emails from Sent folder to ensure we have context for threads we replied to
+	const sentParams = useMemo(() => ({ folder: Folders.SENT, limit: "100" }), []);
+	const { data: sentEmailData } = useEmails(mailboxId, sentParams, { 
+		enabled: folder !== Folders.SENT, // Don't fetch twice if we're already in Sent
+		refetchInterval: 10_000 
+	});
+	
+	const allEmails = useMemo(() => {
+		if (folder === Folders.SENT) return emails;
+		
+		const sentEmails = sentEmailData?.emails ?? [];
+		// Combine and deduplicate by ID just in case
+		const combined = [...emails];
+		const existingIds = new Set(emails.map(e => e.id));
+		
+		for (const se of sentEmails) {
+			if (!existingIds.has(se.id)) {
+				combined.push(se);
+				existingIds.add(se.id);
+			}
+		}
+		return combined;
+	}, [emails, sentEmailData, folder]);
+
 	const { data: folders = [] } = useFolders(mailboxId);
 
 	const folderName = useMemo(() => {
@@ -264,7 +288,7 @@ export default function EmailListRoute() {
 	const contacts = useMemo(() => {
 		const map = new Map<string, { emailAddress: string; displayName: string; latestEmail: Email; threadCount: number; unreadCount: number }>();
 		
-		emails.forEach(email => {
+		allEmails.forEach(email => {
 			// Check if the contact is the sender OR the recipient (for sent emails)
 			// If it's a sent email (we are the sender), group it by the recipient instead
 			let contactStr = email.sender;
@@ -301,7 +325,7 @@ export default function EmailListRoute() {
 		});
 
 		return Array.from(map.values()).sort((a, b) => new Date(b.latestEmail.date).getTime() - new Date(a.latestEmail.date).getTime());
-	}, [emails]);
+	}, [allEmails, folder]);
 
 	const leftPane = (
 		<div className="flex flex-col h-full bg-sh-bg-dark">
@@ -384,7 +408,7 @@ export default function EmailListRoute() {
 		// Map to store grouped threads, keyed by a normalized thread identifier (either thread_id or normalized subject)
 		const groupedThreadsMap = new Map<string, Email>();
 
-		emails.forEach(e => {
+		allEmails.forEach(e => {
 			let contactStr = e.sender;
 			if (folder === Folders.SENT || e.folder_id === Folders.SENT) {
 				const recipients = e.recipient ? e.recipient.split(",") : [];
