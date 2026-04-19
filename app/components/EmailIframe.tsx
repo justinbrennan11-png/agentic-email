@@ -95,15 +95,14 @@ export default function EmailIframe({ body, autoSize }: EmailIframeProps) {
 <style>
 * { box-sizing: border-box; }
 html {
-	background: transparent;
-	color-scheme: dark;
+	background: transparent !important;
 }
 body {
 	font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 	font-size: 13px;
 	line-height: 1.4;
 	color: #ffffff;
-	background: transparent;
+	background: transparent !important;
 	padding: ${padding};
 	margin: 0;
 	word-wrap: break-word;

@@ -327,7 +327,7 @@ export default function EmailListRoute() {
 											setSelectedContact(contact.emailAddress);
 										}
 									}}
-									className={`group relative flex flex-col justify-center w-full text-left cursor-pointer transition-colors border-b border-sh-border-thin h-[48px] pr-4 ${
+									className={`group relative flex flex-col justify-center w-full text-left cursor-pointer transition-colors h-[48px] pr-4 ${
 										isSelected ? "bg-sh-bg-selected" : "hover:bg-sh-bg-hover"
 									} ${isSelected || unread ? "border-l-[3px] border-l-sh-accent pl-[29px]" : "border-l-[3px] border-l-transparent pl-[29px]"}`}
 								>
@@ -407,7 +407,7 @@ export default function EmailListRoute() {
 										handleRowClick(email);
 									}
 								}}
-								className={`group relative flex items-center justify-between w-full text-left cursor-pointer transition-colors border-b border-sh-border-thin h-[48px] px-6 ${
+								className={`group relative flex items-center justify-between w-full text-left cursor-pointer transition-colors h-[48px] px-6 ${
 									isSelected ? "bg-sh-bg-selected" : "hover:bg-sh-bg-hover"
 								}`}
 							>
