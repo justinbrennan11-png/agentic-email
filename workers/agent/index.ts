@@ -372,7 +372,6 @@ export class EmailAgent extends AIChatAgent<any> {
 					
 					return;
 				}
-				
 				emailBody = stripHtmlToText(email.body);
 			}
 
