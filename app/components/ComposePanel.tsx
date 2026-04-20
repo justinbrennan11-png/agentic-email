@@ -14,6 +14,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "~/services/api";
 import DOMPurify from "dompurify";
 import EmailInput from "./EmailInput";
+import { parseSenderInfo, isValidEmailFormat } from "~/lib/utils";
 
 export default function ComposePanel() {
 	const { mailboxId, folder } = useParams<{
@@ -152,8 +153,7 @@ export default function ComposePanel() {
 	const handleAISubmit = () => {
 		if (aiDraftPreview) {
 			const emails = aiTo.split(",").map((e) => e.trim()).filter(Boolean);
-			const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-			const allValid = emails.length > 0 && emails.every(isValidEmail);
+			const allValid = emails.length > 0 && emails.every(isValidEmailFormat);
 
 			if (!allValid) {
 				setAiWizardStep(1);
@@ -394,21 +394,16 @@ export default function ComposePanel() {
 								<label htmlFor="ai-to-input" className="block text-[13px] text-sh-text-muted">
 									Who are you emailing?
 								</label>
-								<input
+								<EmailInput
 									id="ai-to-input"
-									ref={aiToInputRef}
-									type="text"
+									inputRef={aiToInputRef}
 									value={aiTo}
-									onChange={(e) => setAiTo(e.target.value)}
-									placeholder="recipient@example.com"
-									className="w-full bg-sh-search-bg border border-sh-border-thin rounded-[2px] px-3 py-2 text-[13px] text-sh-text-white placeholder:text-sh-search-placeholder focus:outline-none focus:border-sh-text-muted transition-colors"
-									onKeyDown={(e) => {
-										if (e.key === "Enter" && aiTo.trim()) {
-											e.preventDefault();
-											if (aiWizardStep === 1) setAiWizardStep(2);
-											else if (aiWizardStep >= 2) aiSubjectInputRef.current?.focus();
-										}
+									onChange={(val) => {
+										setAiTo(val);
+										if (val.trim() && aiWizardStep === 1) setAiWizardStep(2);
 									}}
+									placeholder="recipient@example.com"
+									className="w-full bg-sh-search-bg border border-sh-border-thin rounded-[2px] px-3 py-2 text-[13px] text-sh-text-white placeholder-sh-search-placeholder focus-within:outline-none focus-within:border-sh-text-muted transition-colors"
 								/>
 							</div>
 

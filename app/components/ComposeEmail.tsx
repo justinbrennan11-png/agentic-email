@@ -59,7 +59,7 @@ export default function ComposeEmail() {
 								placeholder="recipient@example.com, another@example.com"
 								value={to}
 								onChange={(val) => setTo(val)}
-								className="w-full bg-transparent border border-sh-border-thin rounded-[4px] px-2.5 py-1.5 text-[13px] text-sh-text-white focus-within:border-sh-text-muted focus-within:ring-2 focus-within:ring-sh-accent transition-colors"
+								className="w-full bg-sh-search-bg border border-sh-border-thin rounded-[2px] px-2.5 py-1.5 text-[13px] text-sh-text-white placeholder-sh-search-placeholder focus-within:outline-none focus-within:border-sh-text-muted transition-colors"
 								required
 							/>
 						</div>
@@ -82,7 +82,7 @@ export default function ComposeEmail() {
 								value={cc}
 								onChange={(val) => setCc(val)}
 								placeholder="Separate multiple addresses with commas"
-								className="w-full bg-transparent border border-sh-border-thin rounded-[4px] px-2.5 py-1.5 text-[13px] text-sh-text-white focus-within:border-sh-text-muted focus-within:ring-2 focus-within:ring-sh-accent transition-colors"
+								className="w-full bg-sh-search-bg border border-sh-border-thin rounded-[2px] px-2.5 py-1.5 text-[13px] text-sh-text-white placeholder-sh-search-placeholder focus-within:outline-none focus-within:border-sh-text-muted transition-colors"
 							/>
 						</div>
 					)}
@@ -95,7 +95,7 @@ export default function ComposeEmail() {
 								value={bcc}
 								onChange={(val) => setBcc(val)}
 								placeholder="Separate multiple addresses with commas"
-								className="w-full bg-transparent border border-sh-border-thin rounded-[4px] px-2.5 py-1.5 text-[13px] text-sh-text-white focus-within:border-sh-text-muted focus-within:ring-2 focus-within:ring-sh-accent transition-colors"
+								className="w-full bg-sh-search-bg border border-sh-border-thin rounded-[2px] px-2.5 py-1.5 text-[13px] text-sh-text-white placeholder-sh-search-placeholder focus-within:outline-none focus-within:border-sh-text-muted transition-colors"
 							/>
 						</div>
 					)}

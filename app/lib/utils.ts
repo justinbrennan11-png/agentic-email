@@ -240,3 +240,12 @@ export function downloadFile(url: string, filename: string) {
 	link.click();
 	document.body.removeChild(link);
 }
+
+/**
+ * Validate an email string, gracefully extracting the raw address if wrapped in RFC format.
+ */
+export function isValidEmailFormat(email: string): boolean {
+	if (!email) return false;
+	const { emailAddress } = parseSenderInfo(email);
+	return !!emailAddress && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress);
+}

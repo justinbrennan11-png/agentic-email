@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { XIcon } from "@phosphor-icons/react";
 import { useParams } from "react-router";
 import { useContacts } from "~/queries/contacts";
-import { parseSenderInfo } from "~/lib/utils";
+import { parseSenderInfo, isValidEmailFormat } from "~/lib/utils";
 
 interface EmailInputProps {
 	value: string;
@@ -11,16 +11,18 @@ interface EmailInputProps {
 	className?: string;
 	id?: string;
 	required?: boolean;
+	inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
-export default function EmailInput({ value, onChange, placeholder, className, id, required }: EmailInputProps) {
+export default function EmailInput({ value, onChange, placeholder, className, id, required, inputRef: externalRef }: EmailInputProps) {
 	const { mailboxId } = useParams<{ mailboxId: string }>();
 	const { data: contactsData = [] } = useContacts(mailboxId);
 	
 	const [inputValue, setInputValue] = useState("");
 	const [showSuggestions, setShowSuggestions] = useState(false);
 	const [selectedIndex, setSelectedIndex] = useState(0);
-	const inputRef = useRef<HTMLInputElement>(null);
+	const internalRef = useRef<HTMLInputElement>(null);
+	const inputRef = externalRef || internalRef;
 
 	const tags = (value || "").split(",").map(t => t.trim()).filter(Boolean);
 
@@ -61,9 +63,7 @@ export default function EmailInput({ value, onChange, placeholder, className, id
 				const contact = suggestions[selectedIndex] || suggestions[0];
 				handleAddTag(`${contact.displayName} <${contact.emailAddress || contact.id}>`);
 			} else if (inputValue.trim()) {
-				const { emailAddress } = parseSenderInfo(inputValue.trim());
-				const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress);
-				if (isValidEmail) {
+				if (isValidEmailFormat(inputValue.trim())) {
 					handleAddTag(inputValue);
 				}
 			}
@@ -148,12 +148,8 @@ export default function EmailInput({ value, onChange, placeholder, className, id
 					setTimeout(() => {
 						setShowSuggestions(false);
 						const trimmed = inputValue.trim();
-						if (trimmed) {
-							const { emailAddress } = parseSenderInfo(trimmed);
-							const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress);
-							if (isValidEmail) {
-								handleAddTag(trimmed);
-							}
+						if (trimmed && isValidEmailFormat(trimmed)) {
+							handleAddTag(trimmed);
 						}
 					}, 200);
 				}}
