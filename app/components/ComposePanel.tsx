@@ -49,17 +49,43 @@ export default function ComposePanel() {
 	const [aiDraftPreview, setAIDraftPreview] = useState("");
 
 	const [aiDraftError, setAIDraftError] = useState("");
+	const [aiWizardStep, setAiWizardStep] = useState(1);
+	const [aiTo, setAiTo] = useState("");
+	const [aiSubject, setAiSubject] = useState("");
 	const aiPromptInputRef = useRef<HTMLTextAreaElement>(null);
+	const aiToInputRef = useRef<HTMLInputElement>(null);
+	const aiSubjectInputRef = useRef<HTMLInputElement>(null);
 	const modalRef = useRef<HTMLDivElement>(null);
+
+	const closeAIWizard = () => {
+		setIsAIDialogOpen(false);
+		setAiTo("");
+		setAiSubject("");
+		setAIPrompt("");
+		setAIDraftPreview("");
+		setAIDraftError("");
+	};
+
+	const openAIWizard = () => {
+		setAiTo(to);
+		setAiSubject(subject);
+		setAIPrompt("");
+		setAIDraftPreview("");
+		setAIDraftError("");
+		setAiWizardStep(to ? (subject ? 3 : 2) : 1);
+		setIsAIDialogOpen(true);
+	};
 
 	// Auto-focus input when modal opens and trap focus
 	useEffect(() => {
 		if (isAIDialogOpen) {
 			setTimeout(() => {
-				aiPromptInputRef.current?.focus();
+				if (aiWizardStep === 1) aiToInputRef.current?.focus();
+				else if (aiWizardStep === 2) aiSubjectInputRef.current?.focus();
+				else if (aiWizardStep === 3) aiPromptInputRef.current?.focus();
 			}, 50);
 		}
-	}, [isAIDialogOpen]);
+	}, [isAIDialogOpen, aiWizardStep]);
 
 	// Trap focus inside modal
 	useEffect(() => {
@@ -88,7 +114,7 @@ export default function ComposePanel() {
 
 		document.addEventListener("keydown", handleKeyDown);
 		return () => document.removeEventListener("keydown", handleKeyDown);
-	}, [isAIDialogOpen]);
+	}, [isAIDialogOpen, aiWizardStep]);
 
 	const handleAIGenerate = async () => {
 		if (!mailboxId || !aiPrompt.trim()) return;
@@ -122,11 +148,21 @@ export default function ComposePanel() {
 
 	const handleAISubmit = () => {
 		if (aiDraftPreview) {
+			const emails = aiTo.split(",").map((e) => e.trim()).filter(Boolean);
+			const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+			const allValid = emails.length > 0 && emails.every(isValidEmail);
+
+			if (!allValid) {
+				setAiWizardStep(1);
+				setAIDraftError("Please enter a valid email address.");
+				return;
+			}
+
 			const sanitizedPreview = DOMPurify.sanitize(aiDraftPreview.replace(/\n/g, "<br>"));
 			setBody((prev) => prev ? prev + "<br><br>" + sanitizedPreview : sanitizedPreview);
-			setIsAIDialogOpen(false);
-			setAIPrompt("");
-			setAIDraftPreview("");
+			setTo(aiTo);
+			setSubject(aiSubject);
+			closeAIWizard();
 		}
 	};
 
@@ -141,7 +177,7 @@ export default function ComposePanel() {
 				<div className="flex items-center gap-2">
 					<button
 						type="button"
-						onClick={() => setIsAIDialogOpen(true)}
+						onClick={openAIWizard}
 						className="flex items-center gap-1.5 px-2 py-1 text-[12px] font-medium text-sh-text-white bg-sh-accent hover:bg-opacity-90 transition-colors rounded-[2px] focus:outline-none focus:ring-2 focus:ring-sh-accent"
 					>
 						<MagicWandIcon size={14} />
@@ -312,12 +348,12 @@ export default function ComposePanel() {
 					className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] bg-black/50 backdrop-blur-sm"
 					role="presentation"
 					onClick={(e) => {
-						if (e.target === e.currentTarget) setIsAIDialogOpen(false);
+						if (e.target === e.currentTarget) closeAIWizard();
 					}}
 				>
 					<div
 						ref={modalRef}
-						className="w-full max-w-2xl bg-sh-bg-panel border border-sh-border rounded-lg shadow-2xl flex flex-col overflow-hidden"
+						className="w-full max-w-2xl bg-gradient-to-br from-[#1a1b33] via-[#1a1226] to-[#2d152a] border border-sh-border rounded-lg shadow-2xl flex flex-col overflow-hidden"
 						role="dialog"
 						aria-modal="true"
 						aria-labelledby="ai-draft-title"
@@ -325,18 +361,18 @@ export default function ComposePanel() {
 						tabIndex={-1}
 						onKeyDown={(e) => {
 							if (e.key === "Escape") {
-								setIsAIDialogOpen(false);
+								closeAIWizard();
 							}
 						}}
 					>
-						<div className="flex items-center justify-between px-4 py-3 border-b border-sh-border bg-sh-bg-panel">
+						<div className="flex items-center justify-between px-4 py-3 border-b border-sh-border bg-transparent">
 							<div className="flex items-center gap-2">
 								<MagicWandIcon size={20} className="text-sh-accent" />
-								<h2 id="ai-draft-title" className="text-[15px] font-semibold text-sh-text-white">Draft with AI</h2>
+								<h2 id="ai-draft-title" className="text-[15px] font-semibold text-sh-text-white">Draft with AI - Step {aiWizardStep} of 3</h2>
 							</div>
 							<button
 								type="button"
-								onClick={() => setIsAIDialogOpen(false)}
+								onClick={closeAIWizard}
 								className="p-1 text-sh-text-muted hover:text-sh-text-white rounded-[2px] transition-colors focus:outline-none focus:ring-2 focus:ring-sh-accent"
 								aria-label="Close dialog"
 							>
@@ -345,56 +381,132 @@ export default function ComposePanel() {
 						</div>
 
 						<div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto no-scrollbar">
-							<p id="ai-draft-description" className="text-[13px] text-sh-text-muted">
-								Describe what you want to say in the email. The AI will generate a draft that you can review and edit before sending.
-							</p>
-							{aiDraftError && (
-								<div className="flex items-center gap-2 px-3 py-2 rounded-[2px] bg-red-500/10 border border-red-500/20 text-red-400 text-[12px]">
-									<WarningCircleIcon size={16} />
-									<span>{aiDraftError}</span>
-								</div>
-							)}
-							<textarea
-								ref={aiPromptInputRef}
-								value={aiPrompt}
-								onChange={(e) => setAIPrompt(e.target.value)}
-								placeholder="e.g., Thank them for the meeting and ask for the Q3 report by Friday."
-								className="w-full resize-y rounded-[2px] border border-sh-border-thin bg-sh-search-bg px-3 py-2 text-[13px] text-sh-text-white placeholder:text-sh-search-placeholder focus:outline-none focus:border-sh-text-muted transition-colors min-h-[80px]"
-							/>
-							
-							{isAIGenerating && (
-								<div className="flex items-center gap-2 text-sh-accent text-[13px]">
-									<RobotIcon size={16} className="animate-pulse" />
-									<span>Generating draft...</span>
-								</div>
-							)}
-
-							{aiDraftPreview && (
-								<div className="space-y-2">
-									<h3 className="text-[12px] font-medium text-sh-text-muted uppercase tracking-wider">Preview</h3>
-									<div className="rounded-[2px] border border-sh-border-thin bg-sh-bg-dark p-3 text-[13px] text-sh-text-white whitespace-pre-wrap max-h-[300px] overflow-y-auto">
-										{aiDraftPreview}
+							{aiWizardStep === 1 && (
+								<div className="space-y-4 animate-in fade-in duration-200">
+									<p id="ai-draft-description" className="text-[13px] text-sh-text-muted">
+										Who are you emailing? You can add multiple recipients separated by commas.
+									</p>
+									<input
+										ref={aiToInputRef}
+										type="text"
+										value={aiTo}
+										onChange={(e) => setAiTo(e.target.value)}
+										placeholder="recipient@example.com"
+										className="w-full bg-sh-search-bg border border-sh-border-thin rounded-[2px] px-3 py-2 text-[13px] text-sh-text-white placeholder:text-sh-search-placeholder focus:outline-none focus:border-sh-text-muted transition-colors"
+										onKeyDown={(e) => {
+											if (e.key === "Enter" && aiTo.trim()) setAiWizardStep(2);
+										}}
+									/>
+									<div className="flex justify-end gap-3 pt-4 border-t border-sh-border mt-6">
+										<button
+											type="button"
+											onClick={closeAIWizard}
+											className="px-4 py-1.5 text-[13px] font-medium text-sh-text-muted hover:text-sh-text-white bg-transparent border border-sh-border hover:bg-sh-bg-hover transition-colors rounded-[2px] focus:outline-none focus:ring-2 focus:ring-sh-accent"
+										>
+											Cancel
+										</button>
+										<button
+											type="button"
+											onClick={() => setAiWizardStep(2)}
+											disabled={!aiTo.trim()}
+											className="px-4 py-1.5 text-[13px] font-medium text-sh-text-white bg-sh-accent hover:bg-opacity-90 transition-colors rounded-[2px] focus:outline-none focus:ring-2 focus:ring-sh-accent disabled:opacity-50 disabled:cursor-not-allowed"
+										>
+											Next
+										</button>
 									</div>
 								</div>
 							)}
 
-							<div className="flex justify-end gap-3 pt-4 border-t border-sh-border mt-6">
-								<button
-									type="button"
-									onClick={() => setIsAIDialogOpen(false)}
-									className="px-4 py-1.5 text-[13px] font-medium text-sh-text-muted hover:text-sh-text-white bg-transparent border border-sh-border hover:bg-sh-bg-hover transition-colors rounded-[2px] focus:outline-none focus:ring-2 focus:ring-sh-accent"
-								>
-									Cancel
-								</button>
-								<button
-									type="button"
-									onClick={aiDraftPreview ? handleAISubmit : handleAIGenerate}
-									disabled={isAIGenerating || !aiPrompt.trim()}
-									className="px-4 py-1.5 text-[13px] font-medium text-sh-text-white bg-sh-accent hover:bg-opacity-90 transition-colors rounded-[2px] focus:outline-none focus:ring-2 focus:ring-sh-accent disabled:opacity-50 disabled:cursor-not-allowed"
-								>
-									{aiDraftPreview ? "Insert into Compose" : "Generate Draft"}
-								</button>
-							</div>
+							{aiWizardStep === 2 && (
+								<div className="space-y-4 animate-in fade-in duration-200">
+									<p className="text-[13px] text-sh-text-muted">
+										What is the subject of this email?
+									</p>
+									<input
+										ref={aiSubjectInputRef}
+										type="text"
+										value={aiSubject}
+										onChange={(e) => setAiSubject(e.target.value)}
+										placeholder="Email subject"
+										className="w-full bg-sh-search-bg border border-sh-border-thin rounded-[2px] px-3 py-2 text-[13px] text-sh-text-white placeholder:text-sh-search-placeholder focus:outline-none focus:border-sh-text-muted transition-colors"
+										onKeyDown={(e) => {
+											if (e.key === "Enter" && aiSubject.trim()) setAiWizardStep(3);
+										}}
+									/>
+									<div className="flex justify-end gap-3 pt-4 border-t border-sh-border mt-6">
+										<button
+											type="button"
+											onClick={() => setAiWizardStep(1)}
+											className="px-4 py-1.5 text-[13px] font-medium text-sh-text-muted hover:text-sh-text-white bg-transparent border border-sh-border hover:bg-sh-bg-hover transition-colors rounded-[2px] focus:outline-none focus:ring-2 focus:ring-sh-accent"
+										>
+											Back
+										</button>
+										<button
+											type="button"
+											onClick={() => setAiWizardStep(3)}
+											disabled={!aiSubject.trim()}
+											className="px-4 py-1.5 text-[13px] font-medium text-sh-text-white bg-sh-accent hover:bg-opacity-90 transition-colors rounded-[2px] focus:outline-none focus:ring-2 focus:ring-sh-accent disabled:opacity-50 disabled:cursor-not-allowed"
+										>
+											Next
+										</button>
+									</div>
+								</div>
+							)}
+
+							{aiWizardStep === 3 && (
+								<div className="space-y-4 animate-in fade-in duration-200">
+									<p className="text-[13px] text-sh-text-muted">
+										Describe what you want to say in the email. The AI will generate a draft that you can review and edit before sending.
+									</p>
+									{aiDraftError && (
+										<div className="flex items-center gap-2 px-3 py-2 rounded-[2px] bg-red-500/10 border border-red-500/20 text-red-400 text-[12px]">
+											<WarningCircleIcon size={16} />
+											<span>{aiDraftError}</span>
+										</div>
+									)}
+									<textarea
+										ref={aiPromptInputRef}
+										value={aiPrompt}
+										onChange={(e) => setAIPrompt(e.target.value)}
+										placeholder="e.g., Thank them for the meeting and ask for the Q3 report by Friday."
+										className="w-full resize-y rounded-[2px] border border-sh-border-thin bg-sh-search-bg px-3 py-2 text-[13px] text-sh-text-white placeholder:text-sh-search-placeholder focus:outline-none focus:border-sh-text-muted transition-colors min-h-[80px]"
+									/>
+									
+									{isAIGenerating && (
+										<div className="flex items-center gap-2 text-sh-accent text-[13px]">
+											<RobotIcon size={16} className="animate-pulse" />
+											<span>Generating draft...</span>
+										</div>
+									)}
+
+									{aiDraftPreview && (
+										<div className="space-y-2">
+											<h3 className="text-[12px] font-medium text-sh-text-muted uppercase tracking-wider">Preview</h3>
+											<div className="rounded-[2px] border border-sh-border-thin bg-sh-bg-dark p-3 text-[13px] text-sh-text-white whitespace-pre-wrap max-h-[300px] overflow-y-auto">
+												{aiDraftPreview}
+											</div>
+										</div>
+									)}
+
+									<div className="flex justify-end gap-3 pt-4 border-t border-sh-border mt-6">
+										<button
+											type="button"
+											onClick={() => setAiWizardStep(2)}
+											className="px-4 py-1.5 text-[13px] font-medium text-sh-text-muted hover:text-sh-text-white bg-transparent border border-sh-border hover:bg-sh-bg-hover transition-colors rounded-[2px] focus:outline-none focus:ring-2 focus:ring-sh-accent"
+										>
+											Back
+										</button>
+										<button
+											type="button"
+											onClick={aiDraftPreview ? handleAISubmit : handleAIGenerate}
+											disabled={isAIGenerating || !aiPrompt.trim()}
+											className="px-4 py-1.5 text-[13px] font-medium text-sh-text-white bg-sh-accent hover:bg-opacity-90 transition-colors rounded-[2px] focus:outline-none focus:ring-2 focus:ring-sh-accent disabled:opacity-50 disabled:cursor-not-allowed"
+										>
+											{aiDraftPreview ? "Insert into Compose" : "Generate Draft"}
+										</button>
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 				</div>
