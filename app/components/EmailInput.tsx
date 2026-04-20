@@ -1,4 +1,4 @@
-import React, { useState, useRef, KeyboardEvent } from "react";
+import React, { useState, useRef } from "react";
 import { XIcon } from "@phosphor-icons/react";
 import { useParams } from "react-router";
 import { useContacts } from "~/queries/contacts";
@@ -54,7 +54,7 @@ export default function EmailInput({ value, onChange, placeholder, className, id
 		inputRef.current?.focus();
 	};
 
-	const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter" || e.key === ",") {
 			e.preventDefault();
 			if (showSuggestions && suggestions.length > 0) {

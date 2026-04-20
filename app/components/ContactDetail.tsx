@@ -21,7 +21,7 @@ import {
 	BriefcaseIcon,
 	UserIcon
 } from "@phosphor-icons/react";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import type { Email, ContactData } from "~/types";
 import { useParams } from "react-router";
 import { useContacts, useUpdateContact } from "~/queries/contacts";
@@ -56,6 +56,22 @@ function ContactEditModal({ contact, onClose }: { contact: Contact; onClose: () 
 	const [title, setTitle] = useState(editedData.title || "");
 	const [department, setDepartment] = useState(editedData.department || "");
 	const [officeLocation, setOfficeLocation] = useState(editedData.officeLocation || "");
+	const [avatarUrl, setAvatarUrl] = useState(editedData.avatarUrl || "");
+	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		// Convert to base64
+		const reader = new FileReader();
+		reader.onload = (event) => {
+			if (event.target?.result) {
+				setAvatarUrl(event.target.result as string);
+			}
+		};
+		reader.readAsDataURL(file);
+	};
 
 	const handleSave = () => {
 		updateContactMutation.mutate({
@@ -69,6 +85,7 @@ function ContactEditModal({ contact, onClose }: { contact: Contact; onClose: () 
 				title,
 				department,
 				officeLocation,
+				avatarUrl,
 				displayName: `${firstName} ${lastName}`.trim()
 			}
 		}, {
@@ -100,9 +117,27 @@ function ContactEditModal({ contact, onClose }: { contact: Contact; onClose: () 
 					{/* Avatar & Name */}
 					<div className="flex gap-5 items-start">
 						<div className="mt-4 text-sh-text-muted"><UserIcon size={20} /></div>
-						<div className="w-16 h-16 rounded-full bg-sh-bg-hover flex items-center justify-center text-2xl font-bold border border-sh-border shrink-0 mt-2 text-white overflow-hidden">
-							{editedData.avatarUrl ? <img src={editedData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : (firstName.charAt(0).toUpperCase() || "?")}
+						<div 
+							className="w-16 h-16 rounded-full bg-sh-bg-hover flex items-center justify-center text-2xl font-bold border border-sh-border shrink-0 mt-2 text-white overflow-hidden cursor-pointer group relative"
+							onClick={() => fileInputRef.current?.click()}
+							title="Click to upload avatar"
+						>
+							{avatarUrl ? (
+								<img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+							) : (
+								(firstName.charAt(0).toUpperCase() || "?")
+							)}
+							<div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center">
+								<PencilSimpleIcon size={20} className="text-white" />
+							</div>
 						</div>
+						<input 
+							type="file" 
+							accept="image/*" 
+							className="hidden" 
+							ref={fileInputRef} 
+							onChange={handleAvatarUpload} 
+						/>
 						<div className="flex-1 space-y-3 mt-1">
 							<div>
 								<label className="text-[11px] font-medium text-sh-text-muted block mb-0.5">First name</label>
@@ -269,9 +304,6 @@ export default function ContactDetail({ contact, onBack }: ContactDetailProps) {
 					{/* Avatar */}
 					<div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-sh-bg-hover flex items-center justify-center text-4xl md:text-5xl font-bold text-sh-text-white shrink-0 border border-sh-border relative overflow-hidden">
 						{editedData.avatarUrl ? <img src={editedData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : initial}
-						<div className="absolute bottom-1 right-1 w-6 h-6 md:w-8 md:h-8 bg-[#65a30d] border-2 border-[#1e1e2d] rounded-full flex items-center justify-center">
-							<div className="w-2.5 h-2.5 md:w-3 md:h-3 border-b-2 border-r-2 border-white transform rotate-45 -translate-y-[2px]"></div>
-						</div>
 					</div>
 
 					{/* Info & Actions */}

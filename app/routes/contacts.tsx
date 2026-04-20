@@ -38,6 +38,7 @@ export default function ContactsRoute() {
 			const { displayName, emailAddress } = parseSenderInfo(email.sender);
 			
 			const normalizedEmailAddress = emailAddress.toLowerCase();
+			if (normalizedEmailAddress === mailboxId?.toLowerCase()) return; // Skip the 'You' contact
 			const contactId = normalizedEmailAddress;
 			const isUnread = email.thread_unread_count ? email.thread_unread_count > 0 : !email.read;
 
@@ -60,14 +61,54 @@ export default function ContactsRoute() {
 		});
 
 		return Array.from(map.values()).sort((a, b) => a.displayName.localeCompare(b.displayName));
-	}, [emails, editedContacts]);
+	}, [emails, editedContacts, mailboxId]);
+
+	const youContact = useMemo(() => {
+		if (!mailboxId) return null;
+		
+		const normalizedMailboxId = mailboxId.toLowerCase();
+		const editedYou = editedContacts[normalizedMailboxId];
+		const displayName = editedYou?.displayName || parseSenderInfo(mailboxId).displayName;
+		
+		return {
+			emailAddress: normalizedMailboxId,
+			displayName: `You (${displayName})`,
+			latestEmail: null as unknown as Email, // We won't use this for 'You'
+			threadCount: 0,
+			unreadCount: 0
+		};
+	}, [mailboxId, editedContacts]);
 
 	const leftPane = (
 		<div className="flex flex-col h-full bg-sh-bg-dark">
-			<div className="px-6 py-4 border-b border-sh-border shrink-0">
-				<h2 className="text-[14px] font-semibold text-sh-text-white uppercase tracking-wider">Contacts</h2>
-			</div>
-			<div className="flex-1 overflow-y-auto no-scrollbar">
+			<div className="flex-1 overflow-y-auto no-scrollbar py-2">
+				{youContact && (
+					<div className="mb-3 border-b border-sh-border-thin pb-3">
+						<div
+							role="button"
+							tabIndex={0}
+							onClick={() => setSelectedContact(youContact.emailAddress)}
+							onKeyDown={(e: React.KeyboardEvent) => {
+								if (e.key === "Enter" || e.key === " ") {
+									e.preventDefault();
+									setSelectedContact(youContact.emailAddress);
+								}
+							}}
+							className={`group relative flex flex-col justify-center w-full text-left cursor-pointer transition-colors h-[48px] pr-4 ${
+								selectedContact === youContact.emailAddress ? "bg-sh-bg-selected" : "hover:bg-sh-bg-hover"
+							} ${selectedContact === youContact.emailAddress ? "border-l-[3px] border-l-sh-accent pl-[29px]" : "border-l-[3px] border-l-transparent pl-[29px]"}`}
+						>
+							<span
+								className={`truncate text-[15px] font-bold ${
+									selectedContact === youContact.emailAddress ? "text-sh-text-white" : "text-sh-text-read"
+								}`}
+							>
+								{youContact.displayName}
+							</span>
+						</div>
+					</div>
+				)}
+
 				{isFetching && emails.length === 0 ? (
 					<div className="p-6 text-center text-sh-text-muted text-[13px]">Loading contacts...</div>
 				) : contacts.length > 0 ? (
@@ -110,7 +151,7 @@ export default function ContactsRoute() {
 
 	let centerPane: React.ReactNode;
 	if (selectedContact) {
-		const contactObj = contacts.find(c => c.emailAddress === selectedContact);
+		const contactObj = selectedContact === youContact?.emailAddress ? youContact : contacts.find(c => c.emailAddress === selectedContact);
 		centerPane = (
 			<div className="flex flex-col h-full bg-transparent w-full">
 				<ContactDetail contact={contactObj} onBack={() => setSelectedContact(null)} />
