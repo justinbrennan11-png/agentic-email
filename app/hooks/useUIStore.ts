@@ -3,6 +3,7 @@
 //     https://opensource.org/licenses/Apache-2.0
 
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { Email } from "~/types";
 
 export type ComposeMode = "new" | "reply" | "reply-all" | "forward";
@@ -62,73 +63,81 @@ interface UIState {
 	closeThread: () => void;
 }
 
-export const useUIStore = create<UIState>((set, get) => ({
-	selectedEmailId: null,
-	selectedThreadId: null,
-	selectedContact: null,
-	editedContacts: {},
-	isComposing: false,
-	_previousEmailId: null,
-	composeOptions: { mode: "new", originalEmail: null },
-	isComposeModalOpen: false,
-	isSidebarOpen: false,
-	isAgentPanelOpen: false,
-	isSenderCardOpen: false,
-
-	selectEmail: (id) => set({ selectedEmailId: id, selectedThreadId: id, isComposing: false }),
-	setSelectedThreadId: (id) => set({ selectedThreadId: id, selectedEmailId: id, isComposing: false }),
-	setSelectedContact: (contact) => set({ selectedContact: contact, selectedThreadId: null, selectedEmailId: null, isComposing: false }),
-	
-	updateContact: (email, data) => set((state) => ({
-		editedContacts: {
-			...state.editedContacts,
-			[email]: { ...(state.editedContacts[email] || {}), ...data }
-		}
-	})),
-
-	startCompose: (options) =>
-		set((state) => {
-			const mode = options?.mode || "new";
-			const isReplyOrForward = mode === "reply" || mode === "reply-all" || mode === "forward";
-			return {
-				isComposing: true,
-				_previousEmailId: state.selectedEmailId,
-				// Keep selectedEmailId when replying/forwarding so the thread stays visible
-				selectedEmailId: isReplyOrForward ? state.selectedEmailId : null,
-				composeOptions: options || { mode: "new", originalEmail: null },
-				isSidebarOpen: false,
-			};
-		}),
-
-	closePanel: () => set({ selectedContact: null, selectedThreadId: null, selectedEmailId: null, isComposing: false, _previousEmailId: null, composeOptions: { mode: "new" as const, originalEmail: null } }),
-
-	closeThread: () => set({ selectedThreadId: null, selectedEmailId: null, isComposing: false, _previousEmailId: null, composeOptions: { mode: "new" as const, originalEmail: null } }),
-
-	closeCompose: () =>
-		set((state) => ({
+export const useUIStore = create<UIState>()(
+	persist<UIState, [], [], Partial<UIState>>(
+		(set, get) => ({
+			selectedEmailId: null,
+			selectedThreadId: null,
+			selectedContact: null,
+			editedContacts: {},
 			isComposing: false,
-			selectedEmailId: state._previousEmailId,
 			_previousEmailId: null,
-			composeOptions: { mode: "new" as const, originalEmail: null },
-		})),
-
-	openSidebar: () => set({ isSidebarOpen: true }),
-	closeSidebar: () => set({ isSidebarOpen: false }),
-	toggleSidebar: () => set({ isSidebarOpen: !get().isSidebarOpen }),
-
-	toggleAgentPanel: () => set({ isAgentPanelOpen: !get().isAgentPanelOpen }),
-
-	openComposeModal: (options) =>
-		set({
-			composeOptions: options || { mode: "new", originalEmail: null },
-			isComposeModalOpen: true,
-		}),
-
-	closeComposeModal: () =>
-		set({
-			isComposeModalOpen: false,
 			composeOptions: { mode: "new", originalEmail: null },
-		}),
+			isComposeModalOpen: false,
+			isSidebarOpen: false,
+			isAgentPanelOpen: false,
+			isSenderCardOpen: false,
 
-	toggleSenderCard: () => set({ isSenderCardOpen: !get().isSenderCardOpen }),
-}));
+			selectEmail: (id) => set({ selectedEmailId: id, selectedThreadId: id, isComposing: false }),
+			setSelectedThreadId: (id) => set({ selectedThreadId: id, selectedEmailId: id, isComposing: false }),
+			setSelectedContact: (contact) => set({ selectedContact: contact, selectedThreadId: null, selectedEmailId: null, isComposing: false }),
+			
+			updateContact: (email, data) => set((state) => ({
+				editedContacts: {
+					...state.editedContacts,
+					[email]: { ...(state.editedContacts[email] || {}), ...data }
+				}
+			})),
+
+			startCompose: (options) =>
+				set((state) => {
+					const mode = options?.mode || "new";
+					const isReplyOrForward = mode === "reply" || mode === "reply-all" || mode === "forward";
+					return {
+						isComposing: true,
+						_previousEmailId: state.selectedEmailId,
+						// Keep selectedEmailId when replying/forwarding so the thread stays visible
+						selectedEmailId: isReplyOrForward ? state.selectedEmailId : null,
+						composeOptions: options || { mode: "new", originalEmail: null },
+						isSidebarOpen: false,
+					};
+				}),
+
+			closePanel: () => set({ selectedContact: null, selectedThreadId: null, selectedEmailId: null, isComposing: false, _previousEmailId: null, composeOptions: { mode: "new" as const, originalEmail: null } }),
+
+			closeThread: () => set({ selectedThreadId: null, selectedEmailId: null, isComposing: false, _previousEmailId: null, composeOptions: { mode: "new" as const, originalEmail: null } }),
+
+			closeCompose: () =>
+				set((state) => ({
+					isComposing: false,
+					selectedEmailId: state._previousEmailId,
+					_previousEmailId: null,
+					composeOptions: { mode: "new" as const, originalEmail: null },
+				})),
+
+			openSidebar: () => set({ isSidebarOpen: true }),
+			closeSidebar: () => set({ isSidebarOpen: false }),
+			toggleSidebar: () => set({ isSidebarOpen: !get().isSidebarOpen }),
+
+			toggleAgentPanel: () => set({ isAgentPanelOpen: !get().isAgentPanelOpen }),
+
+			openComposeModal: (options) =>
+				set({
+					composeOptions: options || { mode: "new", originalEmail: null },
+					isComposeModalOpen: true,
+				}),
+
+			closeComposeModal: () =>
+				set({
+					isComposeModalOpen: false,
+					composeOptions: { mode: "new", originalEmail: null },
+				}),
+
+			toggleSenderCard: () => set({ isSenderCardOpen: !get().isSenderCardOpen }),
+		}),
+		{
+			name: "ui-store",
+			partialize: (state) => ({ editedContacts: state.editedContacts }),
+		}
+	)
+);
