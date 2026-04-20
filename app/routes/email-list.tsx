@@ -193,6 +193,7 @@ export default function EmailListRoute() {
 		setSelectedThreadId,
 		closePanel,
 		startCompose,
+		editedContacts,
 	} = useUIStore();
 	const [page, setPage] = useState(1);
 
@@ -348,7 +349,7 @@ export default function EmailListRoute() {
 			if (!existing) {
 				map.set(contactId, {
 					emailAddress: normalizedEmailAddress,
-					displayName,
+					displayName: editedContacts[normalizedEmailAddress]?.displayName || displayName,
 					latestEmail: email,
 					threadCount: 1,
 					unreadCount: hasUnread(email) ? 1 : 0
@@ -363,7 +364,7 @@ export default function EmailListRoute() {
 		});
 
 		return Array.from(map.values()).sort((a, b) => new Date(b.latestEmail.date).getTime() - new Date(a.latestEmail.date).getTime());
-	}, [allEmails, folder]);
+	}, [allEmails, folder, editedContacts]);
 
 	const leftPane = (
 		<div className="flex flex-col h-full bg-sh-bg-dark">

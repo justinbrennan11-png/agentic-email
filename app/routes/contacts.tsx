@@ -13,7 +13,7 @@ import type { Email } from "~/types";
 
 export default function ContactsRoute() {
 	const { mailboxId } = useParams<{ mailboxId: string }>();
-	const { selectedContact, setSelectedContact } = useUIStore();
+	const { selectedContact, setSelectedContact, editedContacts } = useUIStore();
 
 	// We fetch a chunk of emails to build our contacts list from cache
 	const params = useMemo(() => ({ limit: "200" }), []);
@@ -35,7 +35,7 @@ export default function ContactsRoute() {
 			if (!existing) {
 				map.set(contactId, {
 					emailAddress: normalizedEmailAddress,
-					displayName,
+					displayName: editedContacts[normalizedEmailAddress]?.displayName || displayName,
 					latestEmail: email,
 					threadCount: 1,
 					unreadCount: isUnread ? 1 : 0
@@ -50,7 +50,7 @@ export default function ContactsRoute() {
 		});
 
 		return Array.from(map.values()).sort((a, b) => a.displayName.localeCompare(b.displayName));
-	}, [emails]);
+	}, [emails, editedContacts]);
 
 	const leftPane = (
 		<div className="flex flex-col h-full bg-sh-bg-dark">

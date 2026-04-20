@@ -54,6 +54,10 @@ interface UIState {
 	selectedContact: string | null;
 	setSelectedContact: (contact: string | null) => void;
 	
+	// Contact edits
+	editedContacts: Record<string, { firstName?: string; lastName?: string; [key: string]: any }>;
+	updateContact: (email: string, data: any) => void;
+
 	// Close just the thread to return to contact list
 	closeThread: () => void;
 }
@@ -62,6 +66,7 @@ export const useUIStore = create<UIState>((set, get) => ({
 	selectedEmailId: null,
 	selectedThreadId: null,
 	selectedContact: null,
+	editedContacts: {},
 	isComposing: false,
 	_previousEmailId: null,
 	composeOptions: { mode: "new", originalEmail: null },
@@ -73,6 +78,13 @@ export const useUIStore = create<UIState>((set, get) => ({
 	selectEmail: (id) => set({ selectedEmailId: id, selectedThreadId: id, isComposing: false }),
 	setSelectedThreadId: (id) => set({ selectedThreadId: id, selectedEmailId: id, isComposing: false }),
 	setSelectedContact: (contact) => set({ selectedContact: contact, selectedThreadId: null, selectedEmailId: null, isComposing: false }),
+	
+	updateContact: (email, data) => set((state) => ({
+		editedContacts: {
+			...state.editedContacts,
+			[email]: { ...(state.editedContacts[email] || {}), ...data }
+		}
+	})),
 
 	startCompose: (options) =>
 		set((state) => {

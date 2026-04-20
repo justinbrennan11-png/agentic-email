@@ -14,9 +14,16 @@ import {
 	BuildingsIcon,
 	UsersIcon,
 	UserCircleIcon,
+	PencilSimpleIcon,
+	XIcon,
+	PlusIcon,
+	List,
+	BriefcaseIcon,
+	UserIcon
 } from "@phosphor-icons/react";
-import React from "react";
+import React, { useState } from "react";
 import type { Email } from "~/types";
+import { useUIStore } from "~/hooks/useUIStore";
 
 interface Contact {
 	emailAddress: string;
@@ -29,6 +36,151 @@ interface Contact {
 interface ContactDetailProps {
 	contact?: Contact;
 	onBack: () => void;
+}
+
+function ContactEditModal({ contact, onClose }: { contact: Contact; onClose: () => void }) {
+	const { editedContacts, updateContact } = useUIStore();
+	const editedData = editedContacts[contact.emailAddress] || {};
+
+	const [firstName, setFirstName] = useState(editedData.firstName ?? (contact.displayName.split(" ")[0] || ""));
+	const [lastName, setLastName] = useState(editedData.lastName ?? (contact.displayName.split(" ").slice(1).join(" ") || ""));
+	const [email, setEmail] = useState(editedData.email || contact.emailAddress);
+	const [deviceNumber, setDeviceNumber] = useState(editedData.deviceNumber || "");
+	const [company, setCompany] = useState(editedData.company || "");
+	const [title, setTitle] = useState(editedData.title || "");
+	const [department, setDepartment] = useState(editedData.department || "");
+	const [officeLocation, setOfficeLocation] = useState(editedData.officeLocation || "");
+
+	const handleSave = () => {
+		updateContact(contact.emailAddress, {
+			firstName,
+			lastName,
+			email,
+			deviceNumber,
+			company,
+			title,
+			department,
+			officeLocation,
+			displayName: `${firstName} ${lastName}`.trim()
+		});
+		onClose();
+	};
+
+	return (
+		<div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] bg-black/50 backdrop-blur-sm" onClick={onClose}>
+			<div
+				className="w-full max-w-[480px] bg-gradient-to-br from-[#1a1b33] via-[#1a1226] to-[#2d152a] border border-sh-border rounded-lg shadow-2xl flex flex-col overflow-hidden text-sh-text-white max-h-[80vh]"
+				role="dialog"
+				aria-modal="true"
+				onClick={(e) => e.stopPropagation()}
+			>
+				<div className="flex justify-end p-4">
+					<button onClick={onClose} className="text-sh-text-muted hover:text-sh-text-white transition-colors">
+						<XIcon size={20} />
+					</button>
+				</div>
+
+				<div className="overflow-y-auto px-8 pb-8 space-y-8 no-scrollbar">
+					{/* Avatar & Name */}
+					<div className="flex gap-5 items-start">
+						<div className="mt-4 text-sh-text-muted"><UserIcon size={20} /></div>
+						<div className="w-16 h-16 rounded-full bg-sh-bg-hover flex items-center justify-center text-2xl font-bold border border-sh-border shrink-0 mt-2 text-white overflow-hidden">
+							{editedData.avatarUrl ? <img src={editedData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : (firstName.charAt(0).toUpperCase() || "?")}
+						</div>
+						<div className="flex-1 space-y-3 mt-1">
+							<div>
+								<label className="text-[11px] font-medium text-sh-text-muted block mb-0.5">First name</label>
+								<input value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-transparent border-b border-sh-border focus:border-sh-accent outline-none text-[14px] pb-1 transition-colors" />
+							</div>
+							<div>
+								<label className="text-[11px] font-medium text-sh-text-muted block mb-0.5">Last name</label>
+								<input value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-transparent border-b border-sh-border focus:border-sh-accent outline-none text-[14px] pb-1 transition-colors" />
+							</div>
+							<button className="flex items-center text-[#0078d4] hover:text-[#106ebe] text-[13px] hover:underline mt-1 transition-colors">
+								<PlusIcon size={14} className="mr-1" /> Add name field
+							</button>
+						</div>
+					</div>
+
+					{/* Email */}
+					<div className="flex gap-5 items-start">
+						<div className="mt-4 text-sh-text-muted"><EnvelopeSimpleIcon size={20} /></div>
+						<div className="flex-1">
+							<label className="text-[11px] font-medium text-sh-text-muted block mb-0.5">Email</label>
+							<input value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-transparent border-b border-sh-border focus:border-sh-accent outline-none text-[14px] pb-1 transition-colors" />
+							<button className="flex items-center text-[#0078d4] hover:text-[#106ebe] text-[13px] hover:underline mt-3 transition-colors">
+								<PlusIcon size={14} className="mr-1" /> Add email
+							</button>
+						</div>
+					</div>
+
+					{/* Phone */}
+					<div className="flex gap-5 items-start">
+						<div className="mt-4 text-sh-text-muted"><PhoneIcon size={20} /></div>
+						<div className="flex-1">
+							<label className="text-[11px] font-medium text-sh-text-muted block mb-0.5">Device number</label>
+							<input value={deviceNumber} onChange={e => setDeviceNumber(e.target.value)} className="w-full bg-transparent border-b border-sh-border focus:border-sh-accent outline-none text-[14px] pb-1 transition-colors" />
+							<button className="flex items-center text-[#0078d4] hover:text-[#106ebe] text-[13px] hover:underline mt-3 transition-colors">
+								<PlusIcon size={14} className="mr-1" /> Add phone
+							</button>
+						</div>
+					</div>
+
+					{/* Work */}
+					<div className="flex gap-5 items-start">
+						<div className="mt-4 text-sh-text-muted"><BriefcaseIcon size={20} /></div>
+						<div className="flex-1">
+							<div className="grid grid-cols-2 gap-x-6 gap-y-4">
+								<div>
+									<label className="text-[11px] font-medium text-sh-text-muted block mb-0.5">Company</label>
+									<input value={company} onChange={e => setCompany(e.target.value)} className="w-full bg-transparent border-b border-sh-border focus:border-sh-accent outline-none text-[14px] pb-1 transition-colors" />
+								</div>
+								<div>
+									<label className="text-[11px] font-medium text-sh-text-muted block mb-0.5">Title</label>
+									<input value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-transparent border-b border-sh-border focus:border-sh-accent outline-none text-[14px] pb-1 transition-colors" />
+								</div>
+								<div>
+									<label className="text-[11px] font-medium text-sh-text-muted block mb-0.5">Department</label>
+									<input value={department} onChange={e => setDepartment(e.target.value)} className="w-full bg-transparent border-b border-sh-border focus:border-sh-accent outline-none text-[14px] pb-1 transition-colors" />
+								</div>
+								<div>
+									<label className="text-[11px] font-medium text-sh-text-muted block mb-0.5">Office location</label>
+									<input value={officeLocation} onChange={e => setOfficeLocation(e.target.value)} className="w-full bg-transparent border-b border-sh-border focus:border-sh-accent outline-none text-[14px] pb-1 transition-colors" />
+								</div>
+							</div>
+							<button className="flex items-center text-[#0078d4] hover:text-[#106ebe] text-[13px] hover:underline mt-4 transition-colors">
+								<PlusIcon size={14} className="mr-1" /> Add work field
+							</button>
+						</div>
+					</div>
+
+					{/* Address & Others */}
+					<div className="flex gap-5 items-center">
+						<div className="text-sh-text-muted"><MapPinIcon size={20} /></div>
+						<button className="flex items-center text-[#0078d4] hover:text-[#106ebe] text-[13px] hover:underline transition-colors">
+							<PlusIcon size={14} className="mr-1" /> Add address
+						</button>
+					</div>
+
+					<div className="flex gap-5 items-center">
+						<div className="text-sh-text-muted"><List size={20} /></div>
+						<button className="flex items-center text-[#0078d4] hover:text-[#106ebe] text-[13px] hover:underline transition-colors">
+							<PlusIcon size={14} className="mr-1" /> Add others
+						</button>
+					</div>
+				</div>
+
+				<div className="px-8 py-4 border-t border-sh-border flex gap-3 mt-auto bg-black/20">
+					<button onClick={handleSave} className="px-5 py-1.5 bg-[#0078d4] hover:bg-[#106ebe] text-white text-[13px] font-medium rounded-[2px] transition-colors focus:outline-none focus:ring-2 focus:ring-sh-accent">
+						Save
+					</button>
+					<button onClick={onClose} className="px-5 py-1.5 bg-transparent border border-sh-border hover:bg-sh-bg-hover text-white text-[13px] font-medium rounded-[2px] transition-colors focus:outline-none focus:ring-2 focus:ring-sh-accent">
+						Cancel
+					</button>
+				</div>
+			</div>
+		</div>
+	);
 }
 
 function ContactField({
@@ -60,9 +212,21 @@ function ContactField({
 }
 
 export default function ContactDetail({ contact, onBack }: ContactDetailProps) {
+	const { editedContacts } = useUIStore();
+	const [isEditing, setIsEditing] = useState(false);
+
 	if (!contact) return null;
 
-	const initial = contact.displayName.charAt(0).toUpperCase() || "?";
+	const editedData = editedContacts[contact.emailAddress] || {};
+	const displayName = editedData.displayName || contact.displayName;
+	const emailAddress = editedData.email || contact.emailAddress;
+	const deviceNumber = editedData.deviceNumber ?? "+1 (234) 456-7891";
+	const company = editedData.company ?? "Contoso";
+	const title = editedData.title ?? "Senior Researcher";
+	const department = editedData.department ?? "Design";
+	const officeLocation = editedData.officeLocation ?? "OSLO-EUFEMIA/4175";
+
+	const initial = displayName.charAt(0).toUpperCase() || "?";
 
 	return (
 		<div className="flex flex-col h-full w-full bg-transparent text-sh-text-white relative overflow-y-auto no-scrollbar">
@@ -83,8 +247,8 @@ export default function ContactDetail({ contact, onBack }: ContactDetailProps) {
 				{/* Header Section */}
 				<div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8 mb-12">
 					{/* Avatar */}
-					<div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-sh-bg-hover flex items-center justify-center text-4xl md:text-5xl font-bold text-sh-text-white shrink-0 border border-sh-border relative">
-						{initial}
+					<div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-sh-bg-hover flex items-center justify-center text-4xl md:text-5xl font-bold text-sh-text-white shrink-0 border border-sh-border relative overflow-hidden">
+						{editedData.avatarUrl ? <img src={editedData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : initial}
 						<div className="absolute bottom-1 right-1 w-6 h-6 md:w-8 md:h-8 bg-[#65a30d] border-2 border-[#1e1e2d] rounded-full flex items-center justify-center">
 							<div className="w-2.5 h-2.5 md:w-3 md:h-3 border-b-2 border-r-2 border-white transform rotate-45 -translate-y-[2px]"></div>
 						</div>
@@ -93,10 +257,10 @@ export default function ContactDetail({ contact, onBack }: ContactDetailProps) {
 					{/* Info & Actions */}
 					<div className="flex flex-col flex-1 min-w-0">
 						<h1 className="text-3xl md:text-[40px] font-bold mb-2 truncate">
-							{contact.displayName}
+							{displayName}
 						</h1>
 						<p className="text-sh-text-muted text-[15px] mb-5 truncate">
-							Senior Researcher • Oslo, Norway
+							{title} • {officeLocation}
 						</p>
 
 						<div className="flex items-center gap-2">
@@ -108,6 +272,9 @@ export default function ContactDetail({ contact, onBack }: ContactDetailProps) {
 							</button>
 							<button className="flex items-center justify-center p-2.5 bg-sh-bg-panel hover:bg-sh-bg-hover transition-colors rounded-[4px] border border-sh-border focus:outline-none focus:ring-2 focus:ring-sh-accent" title="LinkedIn">
 								<LinkedinLogoIcon size={20} />
+							</button>
+							<button onClick={() => setIsEditing(true)} className="flex items-center justify-center p-2.5 bg-sh-bg-panel hover:bg-sh-bg-hover transition-colors rounded-[4px] border border-sh-border focus:outline-none focus:ring-2 focus:ring-sh-accent" title="Edit Contact">
+								<PencilSimpleIcon size={20} />
 							</button>
 							<button className="flex items-center justify-center p-2.5 bg-sh-bg-panel hover:bg-sh-bg-hover transition-colors rounded-[4px] border border-sh-border focus:outline-none focus:ring-2 focus:ring-sh-accent" title="More options">
 								<DotsThreeIcon size={20} />
@@ -141,19 +308,19 @@ export default function ContactDetail({ contact, onBack }: ContactDetailProps) {
 						<ContactField
 							icon={<EnvelopeSimpleIcon size={20} />}
 							label="Email"
-							value={contact.emailAddress}
+							value={emailAddress}
 							isLink
 						/>
 						<ContactField
 							icon={<ChatCircleIcon size={20} />}
 							label="Chat"
-							value={contact.emailAddress}
+							value={emailAddress}
 							isLink
 						/>
 						<ContactField
 							icon={<DeviceMobileIcon size={20} />}
 							label="Mobile"
-							value="+1 (234) 456-7891"
+							value={deviceNumber}
 							isLink
 						/>
 						<ContactField
@@ -170,26 +337,27 @@ export default function ContactDetail({ contact, onBack }: ContactDetailProps) {
 						<ContactField
 							icon={<BuildingsIcon size={20} />}
 							label="Company"
-							value="Contoso"
+							value={company}
 						/>
 						<ContactField
 							icon={<UsersIcon size={20} />}
 							label="Department"
-							value="Design"
+							value={department}
 						/>
 						<ContactField
 							icon={<UserCircleIcon size={20} />}
 							label="Title"
-							value="Senior Researcher"
+							value={title}
 						/>
 						<ContactField
 							icon={<MapPinIcon size={20} />}
 							label="Office Location"
-							value="OSLO-EUFEMIA/4175"
+							value={officeLocation}
 						/>
 					</div>
 				</div>
 			</div>
+			{isEditing && <ContactEditModal contact={contact} onClose={() => setIsEditing(false)} />}
 		</div>
 	);
 }
