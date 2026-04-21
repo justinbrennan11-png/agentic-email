@@ -37,13 +37,18 @@ export interface SendEmailParams {
 	headers?: Record<string, string>;
 }
 
+function extractRawEmail(addr: string): string {
+	const match = addr.match(/<\s*([^>]+?)\s*>/);
+	return match ? match[1].trim() : addr.trim();
+}
+
 function formatRecipient(addresses: string | string[] | { email: string; name?: string }[] | undefined): string | string[] | undefined {
 	if (!addresses) return undefined;
-	if (typeof addresses === "string") return addresses;
+	if (typeof addresses === "string") return extractRawEmail(addresses);
 	if (Array.isArray(addresses)) {
 		return addresses.map((addr) => {
-			if (typeof addr === "string") return addr;
-			return addr.name ? `${addr.name} <${addr.email}>` : addr.email;
+			if (typeof addr === "string") return extractRawEmail(addr);
+			return addr.email; // Cloudflare envelope requires strictly raw email addresses
 		});
 	}
 	return undefined;
