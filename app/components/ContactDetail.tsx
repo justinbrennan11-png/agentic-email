@@ -116,6 +116,12 @@ function ContactEditModal({ contact, onClose }: { contact: Contact; onClose: () 
 				onClick={(e) => e.stopPropagation()}
 			>
 				<div className="flex justify-between items-center p-4 pb-0">
+					<h2 className="text-[16px] font-semibold text-sh-text-white pl-4 pt-2">Edit Contact</h2>
+					<button onClick={onClose} className="text-sh-text-muted hover:text-sh-text-white transition-colors mb-auto">
+						<XIcon size={20} />
+					</button>
+				</div>
+				<div className="flex justify-center mt-2 border-b border-sh-border pb-4 mx-8">
 					<div className="flex gap-1 bg-sh-bg-panel p-1 rounded-lg">
 						<button 
 							onClick={() => setActiveTab("contact")}
@@ -136,12 +142,9 @@ function ContactEditModal({ contact, onClose }: { contact: Contact; onClose: () 
 							Socials
 						</button>
 					</div>
-					<button onClick={onClose} className="text-sh-text-muted hover:text-sh-text-white transition-colors mb-auto">
-						<XIcon size={20} />
-					</button>
 				</div>
 
-				<div className="overflow-y-auto px-8 py-8 space-y-8 no-scrollbar">
+				<div className="overflow-y-auto px-8 py-6 space-y-8 no-scrollbar">
 					{activeTab === "contact" && (
 						<>
 							{/* Avatar & Name */}

@@ -2,7 +2,7 @@
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-import { EnvelopeSimpleIcon, UserIcon, CalendarBlankIcon, XIcon } from "@phosphor-icons/react";
+import { EnvelopeSimpleIcon, UserIcon, CalendarBlankIcon, XIcon, BuildingsIcon } from "@phosphor-icons/react";
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 
@@ -103,6 +103,20 @@ export default function AppDrawer({ isOpen, onClose, mailboxId }: AppDrawerProps
 						title="Calendar"
 					>
 						<CalendarBlankIcon size={24} />
+					</button>
+
+					<button
+						type="button"
+						onClick={() => {
+							// For now, organizations is just a placeholder
+							alert("Organizations coming soon");
+							onClose();
+						}}
+						className="p-3 flex justify-center w-full text-sh-text-muted hover:text-sh-text-white hover:bg-sh-bg-hover transition-colors rounded-[2px] focus:outline-none focus:ring-2 focus:ring-sh-accent"
+						aria-label="Organizations"
+						title="Organizations"
+					>
+						<BuildingsIcon size={24} />
 					</button>
 				</div>
 			</div>
