@@ -10,14 +10,22 @@
  * See: https://developers.cloudflare.com/email-service/api/send-emails/workers-api/
  */
 
+/**
+ * Parameters for sending an email.
+ * 
+ * Recipients (`to`, `cc`, `bcc`) support multiple formats:
+ * - Simple string: `"user@example.com"` or `"User Name <user@example.com>"`
+ * - Array of strings: `["user1@example.com", "User 2 <user2@example.com>"]`
+ * - Array of objects: `[{ email: "user@example.com", name: "User Name" }]`
+ */
 export interface SendEmailParams {
-	to: string | string[];
+	to: string | string[] | { email: string; name?: string }[];
 	from: string | { email: string; name: string };
 	subject: string;
 	html?: string;
 	text?: string;
-	cc?: string | string[];
-	bcc?: string | string[];
+	cc?: string | string[] | { email: string; name?: string }[];
+	bcc?: string | string[] | { email: string; name?: string }[];
 	replyTo?: string | { email: string; name: string };
 	attachments?: {
 		content: string; // base64 encoded
@@ -27,6 +35,18 @@ export interface SendEmailParams {
 		contentId?: string;
 	}[];
 	headers?: Record<string, string>;
+}
+
+function formatRecipient(addresses: string | string[] | { email: string; name?: string }[] | undefined): string | string[] | undefined {
+	if (!addresses) return undefined;
+	if (typeof addresses === "string") return addresses;
+	if (Array.isArray(addresses)) {
+		return addresses.map((addr) => {
+			if (typeof addr === "string") return addr;
+			return addr.name ? `${addr.name} <${addr.email}>` : addr.email;
+		});
+	}
+	return undefined;
 }
 
 /**
@@ -42,15 +62,15 @@ export async function sendEmail(
 	params: SendEmailParams,
 ): Promise<{ messageId: string }> {
 	const message: Record<string, unknown> = {
-		to: params.to,
+		to: formatRecipient(params.to),
 		from: params.from,
 		subject: params.subject,
 	};
 
 	if (params.html) message.html = params.html;
 	if (params.text) message.text = params.text;
-	if (params.cc) message.cc = params.cc;
-	if (params.bcc) message.bcc = params.bcc;
+	if (params.cc) message.cc = formatRecipient(params.cc);
+	if (params.bcc) message.bcc = formatRecipient(params.bcc);
 	if (params.replyTo) message.replyTo = params.replyTo;
 
 	if (params.headers && Object.keys(params.headers).length > 0) {
