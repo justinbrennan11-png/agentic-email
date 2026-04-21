@@ -154,15 +154,7 @@ export async function toolDraftReply(
 	const original = (await stub.getEmail(params.originalEmailId)) as EmailFull | null;
 	const threadId = original?.thread_id || params.originalEmailId;
 
-	// Append quoted original message
-	const quotedBlock = original
-		? buildQuotedReplyBlock({
-				date: original.date,
-				sender: original.sender || params.to,
-				body: original.body ?? undefined,
-			})
-		: "";
-	const bodyHtml = processedBody + quotedBlock;
+	const bodyHtml = processedBody;
 
 	await stub.createEmail(
 		Folders.DRAFT,
@@ -421,20 +413,15 @@ export async function toolSendReply(
 	if (!fromDomain) throw new Error("Invalid mailbox email address");
 	const { messageId, outgoingMessageId } = generateMessageId(fromDomain);
 
-	// Verify and append quoted original message
+	// Verify the body
 	const sanitizedBody = await verifyDraft(env.AI, params.bodyHtml);
 	if (!sanitizedBody) {
 		return { error: "Draft verification failed — refusing to send unverified content. Please try again." };
 	}
-	const quotedBlock = buildQuotedReplyBlock({
-		date: originalEmail.date,
-		sender: originalEmail.sender || params.to,
-		body: originalEmail.body ?? undefined,
-	});
-	const fullBodyHtml = sanitizedBody + quotedBlock;
+	const fullBodyHtml = sanitizedBody;
 
 	try {
-		await sendEmail(env.EMAIL, {
+		await sendEmail(env, {
 			to: params.to,
 			from: mailboxId,
 			subject: params.subject,
@@ -499,7 +486,7 @@ export async function toolSendEmail(
 	}
 
 	try {
-		await sendEmail(env.EMAIL, {
+		await sendEmail(env, {
 			to: params.to,
 			from: mailboxId,
 			subject: params.subject,
