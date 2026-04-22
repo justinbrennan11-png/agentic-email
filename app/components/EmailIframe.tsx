@@ -77,7 +77,9 @@ export default function EmailIframe({ body, autoSize }: EmailIframeProps) {
 					'blockquote[type="cite"]',
 					'div.moz-cite-prefix',
 					'div.yahoo_quoted',
-					'div#appendonsend'
+					'div#appendonsend',
+					'hr[tabindex="-1"]', // Outlook web divider
+					'div[style*="border-top:solid #B5C4DF"]' // Outlook desktop divider
 				];
 				
 				var quotes = document.querySelectorAll(quoteSelectors.join(','));
@@ -90,10 +92,23 @@ export default function EmailIframe({ body, autoSize }: EmailIframeProps) {
 					summary.innerHTML = '<span class="quote-toggle-dots">•••</span>';
 					summary.className = 'quote-summary';
 					
-					// Insert wrapper before the quote, move quote inside wrapper
-					quote.parentNode.insertBefore(wrapper, quote);
-					wrapper.appendChild(summary);
-					wrapper.appendChild(quote);
+					// For hr or div dividers (like Outlook), we want to wrap everything AFTER the divider
+					if (quote.tagName === "HR" || quote.id === "appendonsend" || quote.style.borderTop) {
+						var next = quote.nextSibling;
+						quote.parentNode.insertBefore(wrapper, quote);
+						wrapper.appendChild(summary);
+						wrapper.appendChild(quote);
+						while (next) {
+							var sibling = next;
+							next = next.nextSibling;
+							wrapper.appendChild(sibling);
+						}
+					} else {
+						// Insert wrapper before the quote, move quote inside wrapper
+						quote.parentNode.insertBefore(wrapper, quote);
+						wrapper.appendChild(summary);
+						wrapper.appendChild(quote);
+					}
 				});
 			}
 			hideQuotes();
@@ -133,7 +148,7 @@ body {
 	font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 	font-size: 13px;
 	line-height: 1.4;
-	color: #ffffff;
+	color: #ffffff; /* Enforce standard text color */
 	background: transparent !important;
 	padding: ${padding};
 	margin: 0;
@@ -141,17 +156,27 @@ body {
 	overflow-wrap: break-word;
 	${autoSize ? "overflow: hidden;" : ""}
 }
+
+/* Override hardcoded inline styles from email clients like Outlook */
+body * {
+	color: #ffffff !important;
+}
+
 [style*="position: fixed"], [style*="position:fixed"], [style*="position: absolute"], [style*="position:absolute"] {
 	position: relative !important;
 }
-a { color: #e8500a; }
+a { color: #e8500a !important; }
 img { max-width: 100%; height: auto; }
 blockquote {
-	border-left: 3px solid #333333;
+	border-left: 3px solid #333333 !important;
 	padding-left: 1em;
 	margin-left: 0;
-	color: #888888;
+	color: #888888 !important;
 }
+
+/* Overrides for Outlook-specific classes to force dark mode rendering */
+.MsoNormal, .WordSection1 { color: #ffffff !important; }
+
 pre {
 	background: #1e1e1e;
 	padding: 12px;

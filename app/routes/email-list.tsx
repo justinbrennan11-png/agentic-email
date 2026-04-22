@@ -380,6 +380,20 @@ export default function EmailListRoute() {
 		return Array.from(map.values()).sort((a, b) => new Date(b.latestEmail.date).getTime() - new Date(a.latestEmail.date).getTime());
 	}, [allEmails, folder, editedContacts]);
 
+	const [hasAutoSelected, setHasAutoSelected] = useState(false);
+
+	useEffect(() => {
+		if (!selectedContact && contacts.length > 0 && !hasAutoSelected && !isComposing) {
+			setSelectedContact(contacts[0].emailAddress);
+			setHasAutoSelected(true);
+		}
+	}, [selectedContact, contacts, hasAutoSelected, isComposing, setSelectedContact]);
+
+	// Reset auto-select tracking if the folder changes so we can auto-select the first contact of the new folder
+	useEffect(() => {
+		setHasAutoSelected(false);
+	}, [folder]);
+
 	const leftPane = (
 		<div className="flex flex-col h-full bg-sh-bg-dark">
 			<div className="flex-1 overflow-y-auto no-scrollbar">
