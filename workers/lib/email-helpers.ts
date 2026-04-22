@@ -220,7 +220,12 @@ export function buildQuotedReplyBlock(original: {
 	// reply blocks are injected into the compose editor and outgoing emails
 	// where raw HTML would execute. Convert to escaped plain text instead.
 	const plainBody = stripHtmlToText(original.body);
-	const bodyToQuote = escapeHtml(plainBody).replace(/\n/g, "<br>");
+	
+	// Strip Outlook-style quotes/signatures before appending it to our own quote block
+	// Outlook usually separates history with "________________________________" or "From: " blocks
+	const strippedPlainBody = plainBody.split(/_{10,}|From:\s/)[0].trim();
+	
+	const bodyToQuote = escapeHtml(strippedPlainBody).replace(/\n/g, "<br>");
 
 	return `<br><blockquote style="border-left: 2px solid #ccc; margin: 0; padding-left: 1em; color: #666;">On ${originalDate}, ${originalSender} wrote:<br><br>${bodyToQuote}</blockquote>`;
 }

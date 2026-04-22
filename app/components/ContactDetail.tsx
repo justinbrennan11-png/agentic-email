@@ -25,6 +25,7 @@ import React, { useState, useMemo, useRef } from "react";
 import type { Email, ContactData } from "~/types";
 import { useParams, useNavigate } from "react-router";
 import { useContacts, useUpdateContact } from "~/queries/contacts";
+import { parseSenderInfo } from "~/lib/utils";
 
 import { useUIStore } from "~/hooks/useUIStore";
 
@@ -334,6 +335,13 @@ export default function ContactDetail({ contact, onBack }: ContactDetailProps) {
 
 	const initial = displayName.charAt(0).toUpperCase() || "?";
 	
+	const isOwner = (() => {
+		if (!mailboxId) return false;
+		const { emailAddress: normalizedContactEmail } = parseSenderInfo(contact.emailAddress);
+		const { emailAddress: normalizedMailboxId } = parseSenderInfo(mailboxId);
+		return normalizedContactEmail.toLowerCase() === normalizedMailboxId.toLowerCase();
+	})();
+
 	const navigateToInbox = () => navigate(`/mailbox/${mailboxId}/emails/inbox`);
 
 	return (
@@ -369,18 +377,21 @@ export default function ContactDetail({ contact, onBack }: ContactDetailProps) {
 						</p>
 
 						<div className="flex items-center gap-2">
-							<button onClick={() => {
-								navigateToInbox();
-								startCompose({ mode: "new", prefillTo: contact.emailAddress });
-							}} className="flex items-center justify-center p-2.5 bg-sh-bg-panel hover:bg-sh-bg-hover transition-colors rounded-[4px] border border-sh-border focus:outline-none focus:ring-2 focus:ring-sh-accent" title="Email">
-								<EnvelopeSimpleIcon size={20} />
-							</button>
-							<button onClick={() => {
-								setSelectedContact(contact.emailAddress);
-								navigateToInbox();
-							}} className="flex items-center justify-center p-2.5 bg-sh-bg-panel hover:bg-sh-bg-hover transition-colors rounded-[4px] border border-sh-border focus:outline-none focus:ring-2 focus:ring-sh-accent" title="Chat">
-								<ChatCircleIcon size={20} />
-							</button>
+							{!isOwner && (
+								<>
+									<button onClick={() => {
+										startCompose({ mode: "new", prefillTo: contact.emailAddress });
+									}} className="flex items-center justify-center p-2.5 bg-sh-bg-panel hover:bg-sh-bg-hover transition-colors rounded-[4px] border border-sh-border focus:outline-none focus:ring-2 focus:ring-sh-accent" title="Email">
+										<EnvelopeSimpleIcon size={20} />
+									</button>
+									<button onClick={() => {
+										setSelectedContact(contact.emailAddress);
+										navigateToInbox();
+									}} className="flex items-center justify-center p-2.5 bg-sh-bg-panel hover:bg-sh-bg-hover transition-colors rounded-[4px] border border-sh-border focus:outline-none focus:ring-2 focus:ring-sh-accent" title="Chat">
+										<ChatCircleIcon size={20} />
+									</button>
+								</>
+							)}
 							<button onClick={() => setIsEditing(true)} className="flex items-center justify-center p-2.5 bg-sh-bg-panel hover:bg-sh-bg-hover transition-colors rounded-[4px] border border-sh-border focus:outline-none focus:ring-2 focus:ring-sh-accent" title="Edit Contact">
 								<PencilSimpleIcon size={20} />
 							</button>
@@ -398,12 +409,6 @@ export default function ContactDetail({ contact, onBack }: ContactDetailProps) {
 						className={`pb-3 text-[15px] font-medium border-b-2 whitespace-nowrap transition-colors ${activeDetailTab === "overview" ? "border-sh-accent text-sh-text-white" : "border-transparent text-sh-text-muted hover:text-sh-text-white"}`}
 					>
 						Overview
-					</button>
-					<button 
-						onClick={() => setActiveDetailTab("contact")}
-						className={`pb-3 text-[15px] font-medium border-b-2 whitespace-nowrap transition-colors ${activeDetailTab === "contact" ? "border-sh-accent text-sh-text-white" : "border-transparent text-sh-text-muted hover:text-sh-text-white"}`}
-					>
-						Contact
 					</button>
 					<button 
 						onClick={() => setActiveDetailTab("organization")}
@@ -425,47 +430,6 @@ export default function ContactDetail({ contact, onBack }: ContactDetailProps) {
 						<>
 							<h2 className="text-[16px] font-semibold text-sh-text-white mb-8">
 								Contact information
-							</h2>
-							<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-12">
-								<ContactField
-									icon={<EnvelopeSimpleIcon size={20} />}
-									label="Email"
-									value={emailAddress}
-									isLink
-								/>
-								<ContactField
-									icon={<DeviceMobileIcon size={20} />}
-									label="Mobile"
-									value={deviceNumber}
-									isLink
-								/>
-								<ContactField
-									icon={<BuildingsIcon size={20} />}
-									label="Company"
-									value={company}
-								/>
-								<ContactField
-									icon={<UsersIcon size={20} />}
-									label="Department"
-									value={department}
-								/>
-								<ContactField
-									icon={<UserCircleIcon size={20} />}
-									label="Title"
-									value={title}
-								/>
-								<ContactField
-									icon={<MapPinIcon size={20} />}
-									label="Office Location"
-									value={officeLocation}
-								/>
-							</div>
-						</>
-					)}
-					{activeDetailTab === "contact" && (
-						<>
-							<h2 className="text-[16px] font-semibold text-sh-text-white mb-8">
-								Contact details
 							</h2>
 							<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-12">
 								<ContactField
